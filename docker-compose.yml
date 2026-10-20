@@ -51,6 +51,59 @@ services:
       driver: json-file
       options: { max-size: "10m", max-file: "3" }
 
+  # 과제 8: 추론 결과 배포용 브로커. 1884 는 다른 팀이 읽기 전용으로 구독(retained 최신값을 바로 받음)
+  mqtt:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    volumes:
+      - ./config/mosquitto:/mosquitto/config:ro
+      - mqtt:/mosquitto/data
+    ports:
+      - "1884:1884"
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  # 과제 8: 상시 추론 서비스. 매분 예측·이상·상태 계산 → MQTT(mqtt:1883) 발행 + 조회 API :8091
+  infer:
+    image: aigj/lab:latest
+    restart: unless-stopped
+    command: python -m analysis.service
+    env_file: .env
+    environment:
+      # 원자료는 우리 수집기가 쓰는 로컬 InfluxDB
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_ORG: aigj
+      INFLUX_BUCKET: sensors
+      INFLUX_TOKEN: ${LOCAL_INFLUX_TOKEN}
+      # 로컬에 일주일치가 쌓이기 전까지 그 앞부분만 강사 iot-bucket 에서 읽기(쓰지 않음)
+      INSTRUCTOR_INFLUX_URL: ${INFLUX_URL}
+      INSTRUCTOR_INFLUX_TOKEN: ${INFLUX_TOKEN}
+      INSTRUCTOR_INFLUX_ORG_ID: ${INFLUX_ORG_ID}
+      INSTRUCTOR_INFLUX_BUCKET: ${INFLUX_BUCKET:-iot-bucket}
+      PUB_MQTT_HOST: mqtt
+      PUB_MQTT_PORT: "1883"
+      COLLECTOR_CONFIG: /app/config/collector.yaml
+    depends_on:
+      - influxdb
+      - mqtt
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - ./data:/data
+      - ./config:/app/config:ro
+      - ./analysis:/app/analysis:ro
+    ports:
+      - "8091:8091"               # 조회 API: http://<jetson>:8091/spaces
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8091/healthz', timeout=5).status == 200 else 1)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 300s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
   # 분석 도구 (상시 실행 아님). 사용: docker compose run --rm lab python -m analysis.task2
   lab:
     build:
@@ -66,3 +119,4 @@ services:
 
 volumes:
   influxdb:
+  mqtt:

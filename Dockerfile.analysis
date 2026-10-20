@@ -8,5 +8,7 @@ RUN pip install --no-cache-dir -r requirements-analysis.txt
 RUN pip install --no-cache-dir torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
 # 과제 6: 사전학습 시계열 모델(torch 는 위 CPU 판을 그대로 씀)
 RUN pip install --no-cache-dir chronos-forecasting==2.3.2
+# 과제 7: ONNX 내보내기·ONNX Runtime
+RUN pip install --no-cache-dir onnx==1.23.2 onnxscript==0.7.2 onnxruntime==1.31.0
 COPY analysis ./analysis
 ENV PYTHONUNBUFFERED=1 DATA_DIR=/data MPLCONFIGDIR=/tmp/mpl HF_HOME=/data/hf

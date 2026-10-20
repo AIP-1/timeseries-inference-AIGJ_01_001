@@ -159,6 +159,8 @@ def ventilation(grid, norm, split, out: Path, L: list[str]):
         return
     model = fit(Xs["train"], D["train"].y.to_numpy(), Xs["val"], D["val"].y.to_numpy())
     thr = pick_threshold(D["val"].y.to_numpy(), prob(model, Xs["val"]))
+    torch.save({"state_dict": model.state_dict(), "n_in": Xs["train"].shape[1], "threshold": thr, "locations": locs},
+               out / "vent.pt")                                     # 과제 8 서비스가 그대로 불러 쓴다
     # 규칙 임계값(850ppm)은 과제가 준 값. 같은 방식으로 검증 기간에서 고른 규칙도 함께 본다(공정 비교)
     rule_best, rbest = 850.0, -1
     for c in range(700, 1000, 10):
