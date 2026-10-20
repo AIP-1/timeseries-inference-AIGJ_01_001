@@ -82,6 +82,8 @@ def inject(grid: pd.DataFrame, start: pd.Timestamp, per_type: int, seed: int) ->
         has_co2 = (loc, "co2") in g
         fields = [f for f in prep.FIELDS if (loc, f) in g]
         main = "co2" if has_co2 else "temperature"
+        if g.loc[idx, (loc, main)].notna().sum() == 0:      # 시험 기간에 값이 없는 공간(창고: 장기 결측)
+            continue
         used = _used_day_hours(g[(loc, "co2")]).intersection(idx) if has_co2 else pd.DatetimeIndex([])
         for fault in FAULTS:
             if fault in ("drift", "ventilation") and not has_co2:
