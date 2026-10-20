@@ -9,7 +9,7 @@
 | MQTT 서비스 상태 | `aigj/01-001/inference/_service/status` (retained) | 서비스가 살아 있는지 |
 | 조회 API | `http://100.108.186.17:8091` | 필요할 때 묻기(LLM 에이전트 도구 등) |
 
-`<space>` 키: `lab`(실습실), `office`(사무실), `office_hall`(사무실 밖), `meeting`(회의실). 수집기 설정에 없는 공간(창고)은 한글 이름 그대로.
+`<space>` 키: `lab`(실습실), `office`(사무실), `office_hall`(사무실 밖), `meeting`(회의실), `storage`(창고). 수집기 설정(spaces.by_name)에 없는 공간은 한글 이름 그대로.
 API 경로에는 키와 한글 이름 둘 다 쓸 수 있다.
 
 ## 조회 API

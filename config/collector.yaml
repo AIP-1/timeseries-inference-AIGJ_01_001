@@ -22,6 +22,7 @@ spaces:
     사무실: office
     사무실 밖: office_hall
     회의실: meeting
+    창고: storage
     집중회의실: focus_meeting
     대표실-실내기: ceo_room
     대표실-실외기: ceo_room
