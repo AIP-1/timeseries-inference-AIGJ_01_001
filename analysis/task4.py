@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -153,50 +154,137 @@ def inject(grid: pd.DataFrame, start: pd.Timestamp, per_type: int, seed: int) ->
 # ---------- 규칙 ----------
 
 SPIKE = {"co2": 200.0, "temperature": 2.0, "humidity": 15.0}
+# 규칙마다 기본값(가장 민감) → 검증 기간 헛경보가 예산을 넘으면 한 단계씩 둔하게. 마지막 단계도 넘으면 그 규칙을 끈다(None).
+#   spike: 앞뒤 칸과의 차이 기준 / stuck: 같은 값이 이어진 칸 수 / night: 새벽 기준선 위 여유(ppm) / rise: 시각별 상승 폭 기준 위 여유(ppm)
+#   주입 고장은 값 고정 1~4시간(12칸 이상), 튄 값 CO₂ 300ppm·온도 3℃ 이상이라 둔하게 해도 대부분 잡힌다.
+LADDER = {"spike": lambda f: [SPIKE[f] * m for m in (1.0, 1.25, 1.5, 2.0)],
+          "stuck": lambda f: [6, 9, 12, 18, 24] if f == "co2" else [12, 18, 24, 36],
+          "night": lambda f: [60.0, 100.0, 150.0, 200.0, 300.0],
+          "rise": lambda f: [50.0, 100.0, 150.0, 200.0, 300.0]}
 
 
-def rule_scores(g: pd.DataFrame, night_ref: dict) -> dict[tuple, pd.Series]:
-    """규칙별 경보(0/1). key = (location, field, rule). 모두 과거 값과 다음 한 칸까지만 본다(지연 5분)."""
-    out = {}
-    for loc in sorted(g.columns.get_level_values("location").unique()):
-        for f in prep.FIELDS:
-            if (loc, f) not in g:
-                continue
-            s = g[(loc, f)]
-            prev, nxt = s.shift(1), s.shift(-1)
-            # 튄 값: 앞뒤 두 칸 모두와 크게 다르고 앞뒤끼리는 비슷함. 다음 칸을 봐야 해서 한 칸 늦게 울린다.
-            jump = ((s - prev).abs() > SPIKE[f]) & ((s - nxt).abs() > SPIKE[f]) & ((prev - nxt).abs() < SPIKE[f] / 2)
-            out[(loc, f, "spike")] = jump.shift(1, fill_value=False)
-        # 값 고정: CO2 는 측정 잡음이 있어 30분(6칸) 똑같으면 이상. 온도·습도는 분해능이 거칠어 둘 다 1시간 같아야 이상.
-        if (loc, "co2") in g:
-            d = g[(loc, "co2")].diff().eq(0)
-            out[(loc, "co2", "stuck")] = d.rolling(6).sum().eq(6)
-        th = [f for f in ("temperature", "humidity") if (loc, f) in g]
-        if th:
-            same = np.logical_and.reduce([g[(loc, f)].diff().eq(0) for f in th])
-            out[(loc, th[0], "stuck")] = pd.Series(same, index=g.index).rolling(12).sum().eq(12)
-        # 새벽 기준선(영점 틀어짐 전용): 사람이 없는 02~05시 CO2 는 외기 수준이어야 한다.
-        if (loc, "co2") in g and loc in night_ref:
-            s = g[(loc, "co2")]
-            local = s.index.tz_convert(prep.TZ)
-            night = ((local.hour >= 2) & (local.hour < 5))
-            med = s.where(night).rolling(36, min_periods=24).median()
-            out[(loc, "co2", "night")] = pd.Series(night, index=s.index) & (med > night_ref[loc])
-    return out
+def day_rise(s: pd.Series) -> pd.Series:
+    """그날 새벽(04~06시) 중앙값보다 CO2 가 얼마나 올랐는지(15분 중앙값). 07~23시만 값이 있다(새벽 기준을 이미 아는 시각)."""
+    local = s.index.tz_convert(prep.TZ)
+    h = local.hour
+    base = s.where((h >= 4) & (h < 6)).groupby(np.asarray(local.date)).transform("median")
+    r = (s - base).rolling(3, min_periods=2).median()
+    return r.where((h >= 7) & (h < 23))
 
 
-def night_reference(grid: pd.DataFrame, end: pd.Timestamp) -> dict:
-    """학습 기간 새벽 CO2 중앙값의 99% 분위 + 60ppm."""
-    ref = {}
+def rule_reference(grid: pd.DataFrame, end: pd.Timestamp) -> dict:
+    """학습 기간에서 정하는 규칙 기준. night: 새벽 중앙값 99% 분위, rise: (쉬는 날 여부, 시각)별 상승 폭 99% 분위."""
+    ref = {"night": {}, "rise": {}}
     for loc in sorted(grid.columns.get_level_values("location").unique()):
         if (loc, "co2") not in grid:
             continue
         s = grid.loc[grid.index < end, (loc, "co2")]
         local = s.index.tz_convert(prep.TZ)
-        nm = s[(local.hour >= 2) & (local.hour < 5)].groupby(local[(local.hour >= 2) & (local.hour < 5)].date).median()
+        nmask = (local.hour >= 2) & (local.hour < 5)
+        nm = s[nmask].groupby(local[nmask].date).median()
         if len(nm) > 10:
-            ref[loc] = float(nm.quantile(0.99) + 60)
+            ref["night"][loc] = float(nm.quantile(0.99))
+        r = day_rise(s)
+        key = pd.MultiIndex.from_arrays([prep.offday(s.index).astype(int), local.hour])
+        q = pd.Series(r.to_numpy(), index=key).dropna().groupby(level=[0, 1]).quantile(0.99)
+        if len(q):
+            ref["rise"][loc] = {(int(a), int(b)): float(v) for (a, b), v in q.items()}
     return ref
+
+
+def _spike(s, thr):
+    prev, nxt = s.shift(1), s.shift(-1)
+    # 앞뒤 두 칸 모두와 크게 다르고 앞뒤끼리는 비슷함. 다음 칸을 봐야 해서 한 칸 늦게 울린다.
+    jump = ((s - prev).abs() > thr) & ((s - nxt).abs() > thr) & ((prev - nxt).abs() < thr / 2)
+    return jump.shift(1, fill_value=False)
+
+
+def _run(same: pd.Series, n: int) -> pd.Series:
+    return same.astype(float).rolling(int(n)).sum().eq(n)
+
+
+def _night(s, base, margin):
+    local = s.index.tz_convert(prep.TZ)
+    night = (local.hour >= 2) & (local.hour < 5)
+    med = s.where(night).rolling(36, min_periods=24).median()
+    return pd.Series(night, index=s.index) & (med > base + margin)
+
+
+def _rise(s, table, margin):
+    local = s.index.tz_convert(prep.TZ)
+    off = prep.offday(s.index).astype(int)
+    ref = np.array([table.get((int(a), int(b)), np.nan) for a, b in zip(off, local.hour)])
+    r = day_rise(s).to_numpy()
+    with np.errstate(invalid="ignore"):
+        return pd.Series(r > ref + margin, index=s.index)
+
+
+def rule_series(g: pd.DataFrame, ref: dict) -> list[tuple]:
+    """(location, field, rule) 목록과 각 규칙을 계산하는 함수(param → 0/1 Series)."""
+    out = []
+    for loc in sorted(g.columns.get_level_values("location").unique()):
+        for f in prep.FIELDS:
+            if (loc, f) in g:
+                out.append(((loc, f, "spike"), lambda p, s=g[(loc, f)]: _spike(s, p)))
+        # 값 고정: CO2 는 측정 잡음이 있어 짧게 같아도 이상. 온도·습도는 분해능이 거칠어 둘 다 같아야 이상.
+        if (loc, "co2") in g:
+            out.append(((loc, "co2", "stuck"), lambda p, s=g[(loc, "co2")]: _run(s.diff().eq(0), p)))
+        th = [f for f in ("temperature", "humidity") if (loc, f) in g]
+        if th:
+            same = pd.Series(np.logical_and.reduce([g[(loc, f)].diff().eq(0) for f in th]), index=g.index)
+            out.append(((loc, th[0], "stuck"), lambda p, s=same: _run(s, p)))
+        if (loc, "co2") in g and loc in ref.get("night", {}):
+            # 새벽 기준선(영점 틀어짐): 사람이 없는 02~05시 CO2 는 외기 수준이어야 한다.
+            out.append(((loc, "co2", "night"), lambda p, s=g[(loc, "co2")], b=ref["night"][loc]: _night(s, b, p)))
+        if (loc, "co2") in g and loc in ref.get("rise", {}):
+            # 상승 폭(환기 정지·영점 틀어짐): 같은 요일 종류·시각의 평소 최대 상승보다 크게 오름
+            out.append(((loc, "co2", "rise"), lambda p, s=g[(loc, "co2")], t=ref["rise"][loc]: _rise(s, t, p)))
+    return out
+
+
+def rule_scores(g: pd.DataFrame, ref: dict, params: dict | None = None) -> dict[tuple, pd.Series]:
+    """규칙별 경보(0/1). key = (location, field, rule). params 에 없으면 기본값, None 이면 끈 규칙."""
+    out = {}
+    for key, fn in rule_series(g, ref):
+        p = (params or {}).get(key, LADDER[key[2]](key[1])[0])
+        if p is not None:
+            out[key] = fn(p).fillna(False).astype(bool)
+    return out
+
+
+def calibrate_rules(g: pd.DataFrame, ref: dict, val_mask: np.ndarray, budget: float) -> tuple[dict, pd.DataFrame]:
+    """검증 기간(주입 없음) 규칙 경보가 모두 합쳐 budget 건 이하가 될 때까지, 가장 시끄러운 규칙을 한 단계씩 둔하게(끝이면 끔)."""
+    fns = dict(rule_series(g, ref))
+    step = {k: 0 for k in fns}
+    count = {}
+
+    def n_alarms(k):
+        lad = LADDER[k[2]](k[1])
+        if step[k] >= len(lad):
+            return 0
+        return len(onsets(fns[k](lad[step[k]]).fillna(False)[val_mask]))
+
+    first = {}
+    for k in fns:
+        count[k] = first[k] = n_alarms(k)
+    while sum(count.values()) > budget:
+        k = max(count, key=count.get)
+        step[k] += 1
+        count[k] = n_alarms(k)
+    params = {k: (LADDER[k[2]](k[1])[step[k]] if step[k] < len(LADDER[k[2]](k[1])) else None) for k in fns}
+    tab = pd.DataFrame([{"location": k[0], "field": k[1], "rule": k[2], "default": LADDER[k[2]](k[1])[0],
+                         "val_alarms_default": first[k], "chosen": params[k], "val_alarms_chosen": count[k]} for k in fns])
+    return params, tab
+
+
+def save_rule_params(params: dict, path: Path):
+    path.write_text(json.dumps([[*k, v] for k, v in params.items()], ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def load_rule_params(path: Path) -> dict | None:
+    if not path.exists():
+        return None
+    return {(a, b, c): v for a, b, c, v in json.loads(path.read_text(encoding="utf-8"))}
 
 
 # ---------- 오토인코더 ----------
@@ -320,14 +408,26 @@ def onsets(flag: pd.Series) -> pd.DatetimeIndex:
     return flag.index[out]
 
 
-def pick_threshold(score: pd.Series, budget: float) -> float:
-    """검증 기간 경보 수가 budget(건) 이하가 되는 가장 낮은 임계값."""
-    s = score.dropna()
-    for q in (0.99, 0.995, 0.998, 0.999, 0.9995, 0.9998, 0.9999, 0.99995, 1.0):
-        thr = float(s.quantile(q)) * (1.0 if q < 1 else 1.05)
-        if len(onsets(score > thr)) <= budget:
-            return thr
-    return float(s.max()) * 1.05
+def pick_thresholds(val_scores: dict[tuple, pd.Series], budget: float) -> dict[tuple, float]:
+    """임계값 = 공통 배율 x 항목별 검증 기간 99.9% 분위. 배율은 모든 공간·항목 경보를 합쳐 budget 건 이하가 되는 가장 작은 값.
+
+    공간·항목마다 예산을 나누면 한 몫이 1건도 안 돼(예: 하루 0.4회 / 13개) 모두 '검증 기간 최댓값 위'로 올라가 둔해진다.
+    합쳐서 정하면 조용한 항목은 낮은 임계값을, 시끄러운 항목은 높은 임계값을 같은 배율로 받는다.
+    """
+    base = {k: max(float(s.dropna().quantile(0.999)), 1e-6) for k, s in val_scores.items() if s.notna().any()}
+
+    def total(m):
+        return sum(len(onsets(val_scores[k] > base[k] * m)) for k in base)
+
+    lo, hi = 0.3, 1.0
+    while total(hi) > budget and hi < 100:
+        lo, hi = hi, hi * 1.5
+    if total(lo) <= budget:
+        hi = lo
+    for _ in range(20):
+        mid = (lo + hi) / 2
+        lo, hi = (lo, mid) if total(mid) <= budget else (mid, hi)
+    return {k: base[k] * hi for k in base}
 
 
 def alarms_from(flags: dict[tuple, pd.Series], cause_score: dict | None = None) -> pd.DataFrame:
@@ -393,6 +493,7 @@ def main():
     ap.add_argument("--out", default=os.path.join(d, "reports", "task4"))
     ap.add_argument("--per-type", type=int, default=4, help="공간 x 고장 종류마다 주입할 건수")
     ap.add_argument("--ae-budget", type=float, default=0.4, help="오토인코더 헛경보 예산(전체 공간 합, 하루)")
+    ap.add_argument("--rule-budget", type=float, default=0.5, help="규칙 헛경보 예산(전체 공간 합, 하루)")
     ap.add_argument("--epochs", type=int, default=30)
     ap.add_argument("--seed", type=int, default=0)
     a = ap.parse_args()
@@ -413,16 +514,17 @@ def main():
     model = train_ae(clean, tr_i, va_i, a.epochs, a.seed, device)
     torch.save({"state_dict": model.state_dict(), "locations": locations, "W": W}, out / "ae.pt")
 
-    # 2) 임계값: 검증 기간(주입 없음) 헛경보 예산. 항목 수로 나눠 공간·항목마다 같은 몫
+    # 2) 임계값: 검증 기간(주입 없음) 헛경보 예산. 오토인코더와 규칙이 각자 예산을 받고, 합이 하루 1회 안쪽이 되게 한다.
     sc_clean = ae_scores(model, clean, device)
     val_mask = (idx >= split.train_end) & (idx < split.val_end)
-    per = a.ae_budget * val_days / max(len(sc_clean), 1)
-    thr = {k: pick_threshold(s[val_mask], per) for k, s in sc_clean.items()}
+    thr = pick_thresholds({k: s[val_mask] for k, s in sc_clean.items()}, a.ae_budget * val_days)
     pd.Series(thr).rename("threshold").to_csv(out / "thresholds.csv")
-    night_ref = night_reference(grid, split.train_end)
-
-    # 규칙의 검증 기간 헛경보(주입 없음): 규칙 기준이 실데이터에서 얼마나 조용한지
-    val_rules = alarms_from({k: v[val_mask] for k, v in rule_scores(grid, night_ref).items()})
+    ref = rule_reference(grid, split.train_end)
+    params, rule_tab = calibrate_rules(grid, ref, val_mask, a.rule_budget * val_days)
+    rule_tab.to_csv(out / "rule_calibration.csv", index=False)
+    save_rule_params(params, out / "rule_params.json")             # 과제 8 서비스가 같은 기준을 쓴다
+    val_rule_fa_default = rule_tab.val_alarms_default.sum() / val_days
+    val_rules = alarms_from({k: v[val_mask] for k, v in rule_scores(grid, ref, params).items()})
     val_rule_fa = len(merge_alarms(val_rules)) / val_days if len(val_rules) else 0.0
 
     # 3) 시험 기간에 고장 주입
@@ -432,7 +534,7 @@ def main():
     sc = ae_scores(model, inj, device)
     test_mask = idx >= test_start
     ae_flags = {(k[0], k[1], "ae"): (s > thr[k])[test_mask] for k, s in sc.items()}
-    rule_flags = {k: v[test_mask] for k, v in rule_scores(g_inj, night_ref).items()}
+    rule_flags = {k: v[test_mask] for k, v in rule_scores(g_inj, ref, params).items()}
 
     ae_raw, ru_raw = active_from(ae_flags), active_from(rule_flags)      # 탐지 판정용(켜져 있는 칸 전부)
     ae_al = merge_alarms(alarms_from(ae_flags)).reset_index(drop=True)
@@ -480,9 +582,12 @@ def main():
     comb = summary[summary.detector == "결합"].iloc[0]
     L = ["# 과제 4. 이상 탐지\n"]
     L.append(f"- 시험 기간 {test_start:%Y-%m-%d} ~ {test_end:%Y-%m-%d} 에 고장 {len(events)}건을 주입(공간 x 종류마다 최대 {a.per_type}건). 주입 기록: events.csv")
-    L.append(f"- 오토인코더: 1시간 창(12칸) x CO₂·온도·습도, 학습 기간으로 학습. 임계값은 검증 기간 헛경보가 하루 {a.ae_budget}회(전체 공간 합) 이하가 되게 공간·항목마다 정함(thresholds.csv)")
-    L.append("- 규칙: 튄 값(앞뒤 칸과 CO₂ 200ppm·온도 2℃ 이상 차이), 값 고정(CO₂ 30분, 온도+습도 1시간 같은 값), 새벽 기준선(02~05시 CO₂ 가 학습 기간 새벽 99% 분위+60ppm 초과)")
-    L.append(f"- 규칙의 검증 기간(주입 없음) 경보: 하루 {val_rule_fa:.2f}회\n")
+    L.append(f"- 오토인코더: 1시간 창(12칸) x CO₂·온도·습도, 학습 기간으로 학습. 임계값 = 공통 배율 x 항목별 검증 기간 99.9% 분위, "
+             f"배율은 검증 기간 경보가 모든 공간 합쳐 하루 {a.ae_budget}회 이하가 되는 가장 작은 값(thresholds.csv)")
+    L.append("- 규칙: 튄 값(앞뒤 칸과 크게 다름), 값 고정(같은 값이 이어짐), 새벽 기준선(02~05시 CO₂ 가 학습 기간 새벽 99% 분위 + 여유), "
+             "상승 폭(그날 새벽보다 오른 폭이 같은 요일 종류·시각의 학습 기간 99% 분위 + 여유 초과, 환기 정지·영점 틀어짐용)")
+    L.append(f"- 규칙 기준도 검증 기간에서 정함: 기본값으로 하루 {val_rule_fa_default:.2f}회 울려서, 합쳐 하루 {a.rule_budget}회 이하가 될 때까지 "
+             f"가장 자주 울린 규칙부터 한 단계씩 둔하게 함(마지막 단계도 넘으면 끔). 조정 후 검증 기간 {val_rule_fa:.2f}회/일. 내역: rule_calibration.csv\n")
     L.append("## 확인 기준\n")
     L.append(f"- 결합 이벤트 탐지율 {comb['rate_%']:.1f}% → {'통과' if comb['rate_%'] >= 80 else '미달'} (기준 80%)")
     L.append(f"- 결합 헛경보 하루 {comb['false_alarms_per_day']:.2f}회 → {'통과' if comb['false_alarms_per_day'] <= 1 else '미달'} (기준 1회, 시험 기간의 진짜 이상도 헛경보로 셈)\n")
@@ -502,6 +607,9 @@ def main():
     L += table(ev.groupby(["location", "fault"]).agg(events=("detected", "size"), detected=("detected", "sum")).reset_index())
     L.append("\n## 임계값 배율에 따른 탐지율·헛경보 (오토인코더 임계값 x 배율, 규칙 고정)\n")
     L += table(sweep)
+    L.append("\n## 규칙 기준 조정 (검증 기간, 주입 없음)\n")
+    changed = rule_tab[(rule_tab.val_alarms_default > 0) | (rule_tab.chosen != rule_tab.default)]
+    L += table(changed.assign(chosen=changed.chosen.map(lambda v: "끔" if v is None or (isinstance(v, float) and np.isnan(v)) else v)))
     L.append("\n## 원인 가리키기\n")
     L.append(f"- 결합 탐지에서 첫 경보가 가리킨 항목이 주입한 항목과 맞은 비율: {comb['cause_ok_%']:.1f}%")
     L.append("- 경보마다 공간·항목·탐지기를 alarms.csv 에 남긴다. 오토인코더는 복원 오차가 임계값을 넘은 항목을 원인으로 가리킨다.")

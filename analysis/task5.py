@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -22,13 +23,18 @@ import torch
 from torch import nn
 
 from . import prep
-from .task3 import calendar, load_schedule, load_task2
+from .task3 import DAY, WEEK, calendar, load_schedule, load_task2
 
 LIMIT, HORIZON, LOOK = 1000.0, 6, 12          # 1000ppm, 30분 앞, 과거 1시간
 
 
-def features(grid: pd.DataFrame, norm: pd.DataFrame, loc: str, locations: list[str], use_calendar: bool = True) -> np.ndarray:
-    """[T, F]: 최근 1시간 CO2(1000ppm 기준 거리), 5·15·30분 변화, 온도·습도 현재와 30분 변화, 시각·쉬는 날, 공간."""
+def features(grid: pd.DataFrame, norm: pd.DataFrame, loc: str, locations: list[str], use_calendar: bool = True,
+             lags: bool = False) -> tuple[np.ndarray, np.ndarray]:
+    """[T, F]: 최근 1시간 CO2(1000ppm 기준 거리), 5·15·30분 변화, 온도·습도 현재와 30분 변화, 시각·쉬는 날, 공간.
+
+    lags=True 면 하루 전·일주일 전 같은 시각의 CO2 와 그 뒤 30분 변화도 넣는다(이미 지난 값이라 누수 아님).
+    수업·회의가 요일마다 되풀이되면 '지난주 이 시각엔 30분 뒤 1000을 넘었다'가 가장 직접적인 단서다.
+    """
     T = len(grid.index)
     c = grid[(loc, "co2")].to_numpy(np.float64)
     cols = [(np.roll(c, k) - LIMIT) / 200 for k in range(LOOK)]
@@ -41,10 +47,23 @@ def features(grid: pd.DataFrame, norm: pd.DataFrame, loc: str, locations: list[s
         cols += [v, v - np.roll(v, 6)]
     X = np.column_stack(cols)
     X[:LOOK] = np.nan
+    extra = []
+    if lags:
+        for lag in (DAY, WEEK):
+            past = np.full(T, np.nan)
+            past[lag:] = c[:T - lag]
+            fut = np.full((T, HORIZON), np.nan)
+            for k in range(1, HORIZON + 1):
+                fut[lag - k:, k - 1] = c[:T - lag + k]
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)      # 지난 값이 모두 없는 칸
+                peak = np.nanmax(fut, 1)
+            Z = np.column_stack([(past - LIMIT) / 200, (peak - LIMIT) / 200, (fut[:, 2] - past) / 50, (fut[:, 5] - past) / 50])
+            extra += [np.nan_to_num(Z, nan=0.0), np.isnan(Z).any(1, keepdims=True)]
     oh = np.zeros((T, len(locations)))
     oh[:, locations.index(loc)] = 1
     cal = calendar(grid.index) if use_calendar else np.zeros((T, 0))
-    return np.column_stack([np.nan_to_num(X, nan=0.0), np.isnan(X).any(1), cal, oh]).astype(np.float32), \
+    return np.column_stack([np.nan_to_num(X, nan=0.0), np.isnan(X).any(1), *extra, cal, oh]).astype(np.float32), \
         ~np.isnan(X[:, :LOOK + 3]).any(1)
 
 
@@ -139,6 +158,7 @@ def ventilation(grid, norm, split, out: Path, L: list[str]):
     parts = {"train": [], "val": [], "test": []}
     for loc in locs:
         X, xok = features(grid, norm, loc, locs)
+        XL, _ = features(grid, norm, loc, locs, lags=True)
         y, ok = vent_labels(grid[(loc, "co2")])
         ok &= xok
         # 정답 30분이 다른 구간으로 넘어가는 시각은 뺀다(누수 방지)
@@ -146,9 +166,9 @@ def ventilation(grid, norm, split, out: Path, L: list[str]):
         for part in parts:
             m = ok & (lab == part) & (nxt == part)
             parts[part].append(pd.DataFrame({"loc": loc, "t": grid.index[m], "y": y[m],
-                                             "co2": grid[(loc, "co2")].to_numpy()[m]}).assign(_X=list(X[m])))
+                                             "co2": grid[(loc, "co2")].to_numpy()[m]}).assign(_X=list(X[m]), _XL=list(XL[m])))
     D = {k: pd.concat(v, ignore_index=True) for k, v in parts.items()}
-    Xs = {k: np.stack(D[k]["_X"].to_numpy()) if len(D[k]) else np.zeros((0, 1), np.float32) for k in D}
+    stack = lambda k, c: np.stack(D[k][c].to_numpy()) if len(D[k]) else np.zeros((0, 1), np.float32)  # noqa: E731
     L.append("## 1. 환기 선제 경보 (30분 안에 1000ppm 초과)\n")
     L.append("| 구간 | 평가 시점 | 양성 | 양성 비율 |")
     L.append("|---|---|---|---|")
@@ -157,9 +177,18 @@ def ventilation(grid, norm, split, out: Path, L: list[str]):
     if D["train"].y.sum() < 20 or D["test"].y.sum() == 0:
         L.append("\n양성이 너무 적어 학습·평가하지 않음.")
         return
-    model = fit(Xs["train"], D["train"].y.to_numpy(), Xs["val"], D["val"].y.to_numpy())
-    thr = pick_threshold(D["val"].y.to_numpy(), prob(model, Xs["val"]))
-    torch.save({"state_dict": model.state_dict(), "n_in": Xs["train"].shape[1], "threshold": thr, "locations": locs},
+    yv = D["val"].y.to_numpy()
+    # 입력 두 가지(최근 1시간만 / + 하루 전·일주일 전)를 각각 학습하고, 검증 기간 macro-F1 로 하나를 고른다(시험 기간은 보지 않음)
+    cand = {}
+    for lags, col in ((False, "_X"), (True, "_XL")):
+        Xs = {k: stack(k, col) for k in D}
+        m_ = fit(Xs["train"], D["train"].y.to_numpy(), Xs["val"], yv)
+        pv = prob(m_, Xs["val"])
+        t_ = pick_threshold(yv, pv)
+        cand[lags] = (m_, t_, Xs, metrics(yv, pv >= t_)["macro_f1"])
+    lags = max(cand, key=lambda k: cand[k][3])
+    model, thr, Xs, _ = cand[lags]
+    torch.save({"state_dict": model.state_dict(), "n_in": Xs["train"].shape[1], "threshold": thr, "locations": locs, "lags": lags},
                out / "vent.pt")                                     # 과제 8 서비스가 그대로 불러 쓴다
     # 규칙 임계값(850ppm)은 과제가 준 값. 같은 방식으로 검증 기간에서 고른 규칙도 함께 본다(공정 비교)
     rule_best, rbest = 850.0, -1
@@ -169,17 +198,20 @@ def ventilation(grid, norm, split, out: Path, L: list[str]):
             rbest, rule_best = m["macro_f1"], float(c)
     pt = prob(model, Xs["test"])
     yt = D["test"].y.to_numpy()
-    rows = [{"방법": "모델(MLP)", **metrics(yt, pt >= thr)},
+    o = cand[not lags]
+    rows = [{"방법": f"모델(MLP{', 하루·일주일 전 포함' if lags else ''}) ← 검증 기간에서 고름", **metrics(yt, pt >= thr)},
+            {"방법": f"모델(MLP{', 하루·일주일 전 포함' if not lags else ''})", **metrics(yt, prob(o[0], o[2]["test"]) >= o[1])},
             {"방법": "규칙 CO₂≥850", **metrics(yt, D["test"].co2 >= 850)},
             {"방법": f"규칙 CO₂≥{rule_best:.0f}(검증 기간에서 고름)", **metrics(yt, D["test"].co2 >= rule_best)},
             {"방법": "항상 '아님'", **metrics(yt, np.zeros(len(yt), bool))}]
     res = pd.DataFrame(rows)
     res.to_csv(out / "vent_metrics.csv", index=False)
-    L.append(f"\n모델 임계값 {thr:.3f}(검증 기간에서 재현율 85% 이상 중 macro-F1 최대). 시험 기간 결과:\n")
+    L.append(f"\n모델 임계값 {thr:.3f}(검증 기간에서 재현율 85% 이상 중 macro-F1 최대). 입력 두 가지 중 검증 기간 macro-F1 "
+             f"{cand[False][3]:.3f}(최근 1시간만) vs {cand[True][3]:.3f}(하루·일주일 전 포함) → {'포함' if lags else '최근 1시간만'} 사용. 시험 기간 결과:\n")
     L += md(res[["방법", "accuracy", "recall", "precision", "macro_f1", "tp", "fp", "fn", "tn"]])
     L.append("\n- '항상 아님'의 정확도가 가장 높게 나온다. 양성이 1~2%뿐이라 정확도는 의미가 없고, 재현율·macro-F1 로 본다.")
     m = res.iloc[0]
-    r = res.iloc[1]
+    r = res.iloc[2]
     L.append(f"- 확인 기준: 재현율 {m.recall * 100:.1f}% → {'통과' if m.recall >= 0.85 else '미달'} (85%), "
              f"macro-F1 {m.macro_f1:.3f} vs 규칙 {r.macro_f1:.3f} → {'통과' if m.macro_f1 > r.macro_f1 else '미달'}")
     # 혼동 사례: 놓친 양성·헛경보가 어느 시각·공간에 몰리는지
@@ -190,7 +222,7 @@ def ventilation(grid, norm, split, out: Path, L: list[str]):
     L.append("\n### 가장 많이 틀린 경우 (시험 기간)\n")
     L.append("- 놓친 경보(공간, 시각: 건수): " + ", ".join(f"{a} {b}시: {n}" for (a, b), n in fn.items()))
     L.append("- 헛경보(공간, 시각: 건수): " + ", ".join(f"{a} {b}시: {n}" for (a, b), n in fp.items()))
-    T.drop(columns="_X").to_csv(out / "vent_test_predictions.csv", index=False)
+    T.drop(columns=["_X", "_XL"]).to_csv(out / "vent_test_predictions.csv", index=False)
 
 
 def occupancy(grid, norm, split, schedule_path, observed_path, out: Path, L: list[str]):

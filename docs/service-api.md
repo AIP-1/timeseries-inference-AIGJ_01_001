@@ -48,7 +48,7 @@ API 경로에는 키와 한글 이름 둘 다 쓸 수 있다.
    "is_anomaly": false,
    "cause_field": null,           // 이상이면 가장 큰 항목(co2|temperature|humidity)
    "field_scores": {"co2": 0.42, "temperature": 0.10, "humidity": 0.21},
-   "rules": []                    // 규칙 경보: "data_gap", "stuck:co2", "spike:temperature", "night:co2"(새벽 기준선), "out_of_range:co2"
+   "rules": []                    // 규칙 경보: "data_gap", "stuck:co2", "spike:temperature", "night:co2"(새벽 기준선), "rise:co2"(평소보다 크게 오름: 환기 정지 의심), "out_of_range:co2"
  },
  "state": {                       // CO₂ 센서가 있는 공간만
    "occupied": true,              // 최근 15분 CO₂ 30ppm 이상 상승(일정 자료가 없어 규칙)
@@ -64,7 +64,7 @@ API 경로에는 키와 한글 이름 둘 다 쓸 수 있다.
 ```json
 {"space": "회의실", "alert": "data_gap", "status": "raised", "time": "2026-10-21T01:06:05+00:00"}
 ```
-- `alert`: `data_gap`(10분 넘게 새 값 없음), `stuck:<항목>`, `spike:<항목>`, `night:co2`, `out_of_range:<항목>`, `anomaly:<항목>`, `vent_soon`, `co2_over_1000_forecast`
+- `alert`: `data_gap`(10분 넘게 새 값 없음), `stuck:<항목>`, `spike:<항목>`, `night:co2`, `rise:co2`, `out_of_range:<항목>`, `anomaly:<항목>`, `vent_soon`, `co2_over_1000_forecast`
 - `status`: `raised`(켜짐) → `ongoing`(켜져 있음, 30분마다) → `cleared`(꺼짐). 매분 같은 경보를 보내지 않는다.
 
 ## 처리 방식(학습과 같음)

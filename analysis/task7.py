@@ -79,7 +79,7 @@ def samples(grid, norm, split, data, aed, v_ck, rng):
         for l, t in zip(li, ti):
             loc = data.locations[l]
             if loc in v_ck["locations"] and (loc, "co2") in grid:
-                X, _ = task5.features(grid, norm, loc, v_ck["locations"])
+                X, _ = task5.features(grid, norm, loc, v_ck["locations"], lags=v_ck.get("lags", False))
                 rows.append(X[t])
         if rows:
             out["vent"] = {"inputs": {"x": np.stack(rows).astype(np.float32)}}

@@ -122,7 +122,8 @@ class Engine:
         g2, self.norm, self.split = task3.load_task2(reports / "task2")
         self.columns = g2.columns                               # 학습 때 (공간, 항목) 구성 그대로
         self.locations = sorted(self.columns.get_level_values("location").unique())
-        self.night_ref = task4.night_reference(g2, self.split.train_end)
+        self.rule_ref = task4.rule_reference(g2, self.split.train_end)
+        self.rule_params = task4.load_rule_params(reports / "task4" / "rule_params.json")   # 과제 4 가 검증 기간으로 정한 규칙 기준
         del g2
         # 과제 3 보완(task3_select)이 검증 기간으로 고른 예측을 따른다. 없으면 gru_full 만.
         sel = reports / "task3" / "select_choice.csv"
@@ -151,7 +152,7 @@ class Engine:
             self.vent = task5.MLP(v["n_in"])
             self.vent.load_state_dict(v["state_dict"])
             self.vent.eval()
-            self.vent_thr, self.vent_locs = v["threshold"], v["locations"]
+            self.vent_thr, self.vent_locs, self.vent_lags = v["threshold"], v["locations"], v.get("lags", False)
 
     def combine(self, loc: str, by_v: dict, cur: np.ndarray) -> np.ndarray:
         """[12, 2]. 칸마다 검증 기간에서 고른 후보(GRU 변형 / 현재값 유지 / 가중 평균)를 쓴다.
@@ -216,7 +217,7 @@ class Engine:
             self.ae.load_state_dict(self.ae_state)
             self.ae.eval()
         ae_sc = task4.ae_scores(self.ae, aed, torch.device("cpu"))
-        rules = task4.rule_scores(g, self.night_ref)
+        rules = task4.rule_scores(g, self.rule_ref, self.rule_params)
         last_seen = raw.groupby("location")["time"].max() if len(raw) else pd.Series(dtype="datetime64[ns, UTC]")
         recent = raw[raw["time"] >= now - STALE]
         for loc in self.locations:
@@ -258,7 +259,7 @@ class Engine:
                 st["occupied"] = bool(d15 >= 30) if pd.notna(d15) else None
                 st["occupied_method"] = "rule_co2_rise_15min_30ppm"
                 if self.vent is not None and loc in self.vent_locs:
-                    X, ok = task5.features(g, self.norm, loc, self.vent_locs)
+                    X, ok = task5.features(g, self.norm, loc, self.vent_locs, lags=self.vent_lags)
                     if ok[-1] and (cur.get("co2") or 0) < 1000:
                         pr = float(task5.prob(self.vent, X[-1:])[0])
                         st["vent_alert"] = pr >= self.vent_thr
