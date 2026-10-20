@@ -1,10 +1,44 @@
-# 수집기 상시 가동. 보드 재부팅 뒤에도 Docker 가 자동으로 다시 띄운다(restart: unless-stopped).
+# 수집기 + 로컬 InfluxDB. 보드 재부팅 뒤에도 Docker 가 자동으로 다시 띄운다(restart: unless-stopped).
+#
+# 강사 InfluxDB(iot-bucket)는 다른 수집기가 이미 쓰는 공용 저장소라 여기에 쓰지 않는다.
+# 우리 수집기는 Jetson 안의 InfluxDB 에 쓰고, iot-bucket 은 과거 데이터를 읽는 용도로만 쓴다.
 services:
+  influxdb:
+    image: influxdb:2.7
+    restart: unless-stopped
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${LOCAL_INFLUX_PASSWORD:?.env 에 LOCAL_INFLUX_PASSWORD 필요}
+      DOCKER_INFLUXDB_INIT_ORG: aigj
+      DOCKER_INFLUXDB_INIT_BUCKET: sensors
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${LOCAL_INFLUX_TOKEN:?.env 에 LOCAL_INFLUX_TOKEN 필요}
+    volumes:
+      - influxdb:/var/lib/influxdb2
+    ports:
+      - "127.0.0.1:8086:8086"     # Jetson 안에서만 접근 (학습·추론 코드용)
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
   collector:
     build: .
     image: aigj/collector:latest
     restart: unless-stopped
     env_file: .env
+    environment:
+      # .env 의 INFLUX_* (강사 서버)를 덮어써서 로컬 InfluxDB 에 쓴다
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_ORG: aigj
+      INFLUX_BUCKET: sensors
+      INFLUX_TOKEN: ${LOCAL_INFLUX_TOKEN}
+    depends_on:
+      - influxdb
     # 호스트 계정 권한으로 실행해 data/ 파일을 sudo 없이 지울 수 있게 한다
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     volumes:
@@ -15,3 +49,6 @@ services:
     logging:
       driver: json-file
       options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  influxdb:

@@ -4,13 +4,15 @@
 
 ```
 MQTT 브로커 ──> 수집기 ──┬─> data/raw/YYYY-MM-DD.jsonl.gz   (받은 메시지 원본, 다시 파싱용)
-                         └─> data/spool.sqlite (디스크 큐) ──> InfluxDB
+                         └─> data/spool.sqlite (디스크 큐) ──> Jetson 로컬 InfluxDB (org aigj, bucket sensors)
                  └─ :8090/status  수집 현황, :8090/healthz  상태 확인
 ```
 
 - **설정만 바꿔 대응:** 토픽·시각·태그·필드 위치는 모두 `config/collector.yaml` 에 있다. 코드는 형식을 모른다.
 - **끊김에 버팀:** 브로커가 재시작되면 1~10초 간격으로 다시 붙는다. 영구 세션(`clean_session=False`, QoS 1)이라 수집기가 잠시 꺼진 동안의 메시지도 브로커가 보관했다가 넘겨 준다(브로커가 세션 보관을 허용할 때). InfluxDB 가 죽으면 디스크 큐에 쌓아 두고 살아나면 보낸다.
 - **재부팅 후 자동 시작:** `restart: unless-stopped`. sudo 없이 docker 그룹 권한만으로 된다.
+
+강사 InfluxDB(`iot-bucket`)는 다른 수집기가 이미 쓰는 공용 저장소라 쓰지 않는다. 같은 원천을 두 수집기가 따로 받으므로, 두 저장소의 커버율을 비교하면 우리 수집기의 결측이 수집기 탓인지 센서·게이트웨이 탓인지 가릴 수 있다.
 
 ## 저장 형식 (InfluxDB)
 
