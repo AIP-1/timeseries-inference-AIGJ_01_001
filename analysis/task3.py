@@ -59,13 +59,34 @@ def calendar(index: pd.DatetimeIndex) -> np.ndarray:
     local = index.tz_convert(prep.TZ)
     h = (local.hour + local.minute / 60).to_numpy() / 24 * 2 * np.pi
     d = local.dayofweek.to_numpy() / 7 * 2 * np.pi
-    return np.stack([np.sin(h), np.cos(h), np.sin(d), np.cos(d), (local.dayofweek >= 5).astype(float)], 1).astype(np.float32)
+    return np.stack([np.sin(h), np.cos(h), np.sin(d), np.cos(d), prep.offday(index)], 1).astype(np.float32)
+
+
+DAY, WEEK = 24 * 12, 7 * 24 * 12
+
+
+def lag_deltas(raw: np.ndarray, std: np.ndarray, lag: int) -> np.ndarray:
+    """lag 칸 전(하루 전·일주일 전) 같은 시각에서 그 뒤 60분 동안 얼마나 변했는지. [L, T, H*2] 와 결측 표시.
+
+    지금 시각에 이미 아는 과거 값이라 누수가 아니다. '어제 이 시각엔 곧 올랐다'를 모델이 볼 수 있다.
+    """
+    L, T, _ = raw.shape
+    past = np.full_like(raw, np.nan)
+    past[:, lag:] = raw[:, :T - lag]
+    out = []
+    for k in range(1, HORIZON + 1):
+        fut = np.full_like(raw, np.nan)
+        if lag - k > 0:
+            fut[:, lag - k:] = raw[:, :T - lag + k]
+        out.append((fut - past) / std[:, None, :])
+    d = np.concatenate(out, 2)
+    return np.nan_to_num(d, nan=0.0).astype(np.float32), (~np.isnan(d)).astype(np.float32)
 
 
 class Data:
     """공간 x 시각 x 특징 배열. 창(window)은 학습 때 인덱스로 잘라 쓴다(미리 다 만들면 보드 메모리가 모자람)."""
 
-    def __init__(self, grid, norm, split, lookback=24, use_calendar=True, schedule=None, absolute=False):
+    def __init__(self, grid, norm, split, lookback=24, use_calendar=True, schedule=None, absolute=False, use_lags=True):
         self.grid, self.split, self.lookback, self.absolute = grid, split, lookback, absolute
         self.index = grid.index
         self.locations = sorted(grid.columns.get_level_values("location").unique())
@@ -97,7 +118,12 @@ class Data:
         self.X = np.stack(feats)                     # [L, T, F]
         self.raw, self.mean, self.std = raw, mean, std
         self.schedule = schedule
-        self.n_static = HORIZON if schedule is not None else 0
+        static = []
+        if use_lags:
+            for lag in (DAY, WEEK):
+                static += list(lag_deltas(raw, std, lag))
+        self.static = np.concatenate(static, 2) if static else None      # [L, T, S]
+        self.n_static = (HORIZON if schedule is not None else 0) + (self.static.shape[2] if static else 0)
 
         # 목표: 변화량(기본) 또는 절대값, 공간별 표준편차 단위
         fut = np.stack([np.roll(raw, -k, axis=1) for k in range(1, HORIZON + 1)], 2)   # [L, T, H, 2]
@@ -124,11 +150,13 @@ class Data:
     def batch(self, li, ti, device):
         offs = np.arange(-self.lookback + 1, 1)
         x = torch.from_numpy(self.X[li[:, None], ti[:, None] + offs[None, :]]).to(device)
+        parts = []
         if self.schedule is not None:
             fidx = np.minimum(ti[:, None] + np.arange(1, HORIZON + 1)[None, :], len(self.index) - 1)
-            s = torch.from_numpy(self.schedule[li[:, None], fidx]).to(device)
-        else:
-            s = torch.zeros((len(li), 0), device=device)
+            parts.append(self.schedule[li[:, None], fidx])
+        if self.static is not None:
+            parts.append(self.static[li, ti])
+        s = torch.from_numpy(np.concatenate(parts, 1)).to(device) if parts else torch.zeros((len(li), 0), device=device)
         y = torch.from_numpy(self.Y[li, ti]).to(device)
         m = torch.from_numpy(self.Ymask[li, ti]).to(device)
         return x, s, y, m
@@ -216,6 +244,20 @@ def predict(model, data: Data, l: int, ti: np.ndarray, device) -> np.ndarray:
     return np.concatenate(outs) if outs else np.zeros((0, HORIZON, 2))
 
 
+def used_days(grid: pd.DataFrame, loc: str) -> dict:
+    """평가 해석용(입력에 쓰지 않음): 그날 CO2 가 새벽보다 100ppm 이상 오른 날 = 사용한 날."""
+    if (loc, "co2") not in grid:
+        return {}
+    s = grid[(loc, "co2")].copy()
+    s.index = s.index.tz_convert(prep.TZ)
+    out = {}
+    for day, g in s.groupby(s.index.date):
+        night = g.between_time("04:00", "06:00").median()
+        day_max = g.between_time("06:00", "20:00").max()
+        out[day] = bool(day_max > night + 100) if pd.notna(night) and pd.notna(day_max) else None
+    return out
+
+
 def evaluate(model, data: Data, name: str, device) -> tuple[pd.DataFrame, pd.DataFrame]:
     """시험 기간, 과제 2와 같은 평가 시점에서 기준선과 모델의 MAE. 60분 CO2 오차는 시각별로도 남긴다."""
     test = data.index[data.index >= data.split.val_end]
@@ -239,10 +281,13 @@ def evaluate(model, data: Data, name: str, device) -> tuple[pd.DataFrame, pd.Dat
                 rows.append({"location": loc, "field": field, "horizon_min": h, "model": name,
                              "mae": float(err.mean()), "n": len(pts)})
                 if h == 60:
+                    used = used_days(data.grid, loc)
                     hr = pts.tz_convert(prep.TZ).hour
                     pe = np.abs(p["persistence"] - p["target"]).to_numpy()
                     hourly.append(pd.DataFrame({"location": loc, "field": field, "model": name, "hour": hr,
                                                 "weekday": pts.tz_convert(prep.TZ).dayofweek < 5,
+                                                "offday": prep.offday(pts) > 0,
+                                                "used": [used.get(d) for d in pts.tz_convert(prep.TZ).date],
                                                 "err": err, "persistence_err": pe}))
     return pd.DataFrame(rows), (pd.concat(hourly) if hourly else pd.DataFrame())
 
@@ -297,7 +342,7 @@ def main():
     ap.add_argument("--task2", default=os.path.join(data_dir, "reports", "task2"))
     ap.add_argument("--out", default=os.path.join(data_dir, "reports", "task3"))
     ap.add_argument("--schedule", help="일정 CSV: location,start,end (KST)")
-    ap.add_argument("--variants", default="", help="쉼표 구분. 기본: full,no_calendar (+일정 있으면 no_schedule), 추가로 absolute")
+    ap.add_argument("--variants", default="", help="쉼표 구분. 기본: full,no_calendar (+일정 있으면 no_schedule). 추가: absolute, no_lags")
     ap.add_argument("--lookback", type=int, default=24)
     ap.add_argument("--hidden", type=int, default=64)
     ap.add_argument("--layers", type=int, default=2)
@@ -323,7 +368,8 @@ def main():
     log, results, hourly, base = [], [], [], None
     for v in variants:
         data = Data(grid, norm, split, a.lookback, use_calendar=(v != "no_calendar"),
-                    schedule=None if v == "no_schedule" else sched, absolute=(v == "absolute"))
+                    schedule=None if v == "no_schedule" else sched, absolute=(v == "absolute"),
+                    use_lags=(v != "no_lags"))
         if base is None:
             base = baseline_rows(data)
         model = train(data, a, device, log, v)
@@ -344,7 +390,8 @@ def main():
     main_m = f"gru_{variants[0]}"
 
     L = ["# 과제 3. 60분 예측\n"]
-    L.append(f"- 모델: GRU({a.layers}층, {a.hidden}), 과거 {a.lookback * 5}분, 12칸 변화량 직접 출력, 모든 공간 한 모델")
+    L.append(f"- 모델: GRU({a.layers}층, {a.hidden}), 과거 {a.lookback * 5}분 + 하루 전·일주일 전 같은 시각의 60분 변화, 12칸 변화량 직접 출력, 모든 공간 한 모델")
+    L.append("- 달력 입력: 시각·요일 sin/cos, 쉬는 날(주말·공휴일) 표시")
     L.append(f"- 학습 ~{split.train_end:%Y-%m-%d}, 조기 종료는 검증 기간 ~{split.val_end:%Y-%m-%d}, 평가는 시험 기간만(과제 2와 같은 시점)")
     L.append(f"- 장치 {device}, 변형 {', '.join(variants)}\n")
     L.append("## 확인 기준\n")
@@ -365,20 +412,32 @@ def main():
         for _, r in sub.iterrows():
             L.append("| " + " | ".join(f"{v:{fmt}}" if isinstance(v, float) else str(v) for v in r) + " |")
         L.append("")
-    L.append("## 60분 CO₂ 오차가 큰 시각 (평일, KST)\n")
-    h = hourly[(hourly.field == "co2") & (hourly.model == main_m) & hourly.weekday]
+    L.append("## 사용한 날 / 쓰지 않은 날로 나눈 60분 CO₂ MAE (ppm)\n")
+    L.append("'사용한 날' = 그날 CO₂ 가 새벽보다 100ppm 이상 오른 날. 해석용 구분이며 모델 입력에는 쓰지 않는다.\n")
+    h = hourly[(hourly.field == "co2")].copy()
     if len(h):
-        top = h.groupby(["location", "hour"])["err"].mean().reset_index().sort_values("err", ascending=False)
+        h["day"] = np.where(h["used"] == True, "사용", np.where(h["used"] == False, "미사용", "?"))  # noqa: E712
+        t = h.groupby(["location", "day", "model"]).agg(model_mae=("err", "mean"), persistence=("persistence_err", "mean"),
+                                                         n=("err", "size")).reset_index()
+        L.append("| location | day | model | model_mae | persistence | gain_% | n |")
+        L.append("|---|---|---|---|---|---|---|")
+        for r in t.itertuples():
+            L.append(f"| {r.location} | {r.day} | {r.model} | {r.model_mae:.1f} | {r.persistence:.1f} | "
+                     f"{(1 - r.model_mae / r.persistence) * 100:.1f} | {r.n} |")
+        L.append("\n## 60분 CO₂ 오차가 큰 시각 (평일, KST, 모델 / 현재값 유지)\n")
+        hw = h[(h.model == main_m) & h.weekday]
+        top = hw.groupby(["location", "hour"])[["err", "persistence_err"]].mean().reset_index().sort_values("err", ascending=False)
         for loc, g in top.groupby("location"):
-            L.append(f"- {loc}: " + ", ".join(f"{int(r.hour)}시 {r.err:.0f}ppm" for r in g.head(3).itertuples()))
-        h.groupby(["location", "hour"])[["err", "persistence_err"]].mean().to_csv(out / "co2_err_by_hour.csv")
+            L.append(f"- {loc}: " + ", ".join(f"{int(r.hour)}시 {r.err:.0f} / {r.persistence_err:.0f}ppm" for r in g.head(3).itertuples()))
+        h.groupby(["location", "model", "hour"])[["err", "persistence_err"]].mean().to_csv(out / "co2_err_by_hour.csv")
     if len(variants) > 1:
         L.append("\n## 정보 제거 비교 (60분, 공간 합산)\n")
         for v in variants[1:]:
             for field, unit in (("co2", "ppm"), ("temperature", "℃")):
                 a_ = pool[(pool.field == field) & (pool.model == main_m) & (pool.horizon_min == 60)]["mae"].iloc[0]
                 b_ = pool[(pool.field == field) & (pool.model == f"gru_{v}") & (pool.horizon_min == 60)]["mae"].iloc[0]
-                L.append(f"- {v} 대비 {main_m}: {field} 60분 오차 {b_ - a_:.3f}{unit} 감소 ({b_:.3f} → {a_:.3f})")
+                word = "줄어듦" if b_ > a_ else "늘어남"
+                L.append(f"- {v} → {main_m}: {field} 60분 오차 {b_:.3f} → {a_:.3f}{unit} ({abs(b_ - a_):.3f} {word})")
         if sched is None:
             L.append("\n일정 자료가 없어 '일정 정보의 가치'는 아직 잴 수 없다. 대신 시각·요일 정보를 뺀 모델과 비교했다. "
                      "일정 CSV 가 생기면 `--schedule` 로 다시 돌리면 full/no_schedule 비교가 나온다.")
