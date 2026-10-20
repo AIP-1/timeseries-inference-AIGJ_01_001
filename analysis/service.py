@@ -124,11 +124,20 @@ class Engine:
         self.locations = sorted(self.columns.get_level_values("location").unique())
         self.night_ref = task4.night_reference(g2, self.split.train_end)
         del g2
-        ck = torch.load(reports / "task3" / "gru_full.pt", map_location="cpu", weights_only=False)
-        self.gru = task3.GRUForecaster(ck["n_in"], ck["n_static"], ck["hidden"], ck["layers"])
-        self.gru.load_state_dict(ck["state_dict"])
-        self.gru.eval()
-        self.gru_ck = ck
+        # 과제 3 보완(task3_select)이 검증 기간으로 고른 예측을 따른다. 없으면 gru_full 만.
+        sel = reports / "task3" / "select_choice.csv"
+        self.choice = pd.read_csv(sel) if sel.exists() else None
+        need = {"full"}
+        if self.choice is not None:
+            need |= {c.split("*")[0][4:] for c in self.choice["candidate"] if c.startswith("gru_")}
+        self.grus = {}
+        for v in sorted(need):
+            ck = torch.load(reports / "task3" / f"gru_{v}.pt", map_location="cpu", weights_only=False)
+            m = task3.GRUForecaster(ck["n_in"], ck["n_static"], ck["hidden"], ck["layers"])
+            m.load_state_dict(ck["state_dict"])
+            m.eval()
+            self.grus[v] = (m, ck)
+        self.gru_ck = self.grus["full"][1]
         ae = torch.load(reports / "task4" / "ae.pt", map_location="cpu", weights_only=False)
         self.ae_locs = ae["locations"]
         self.ae = None
@@ -143,6 +152,30 @@ class Engine:
             self.vent.load_state_dict(v["state_dict"])
             self.vent.eval()
             self.vent_thr, self.vent_locs = v["threshold"], v["locations"]
+
+    def combine(self, loc: str, by_v: dict, cur: np.ndarray) -> np.ndarray:
+        """[12, 2]. 칸마다 검증 기간에서 고른 후보(GRU 변형 / 현재값 유지 / 가중 평균)를 쓴다.
+        고른 시점은 5·15·30·60분뿐이라, 그 사이 칸은 바로 위 시점의 선택을 따른다."""
+        out = by_v["full"][loc].copy()
+        if self.choice is None:
+            return out
+        c = self.choice[self.choice.location == loc]
+        for j, f in enumerate(task3.TARGETS):
+            for k in range(task3.HORIZON):
+                minutes = 5 * (k + 1)
+                h = min(x for x in (5, 15, 30, 60) if x >= minutes)
+                row = c[(c.field == f) & (c.horizon_min == h)]
+                if row.empty:
+                    continue
+                name = row.candidate.iloc[0]
+                if name == "persistence":
+                    out[k, j] = cur[j]
+                    continue
+                v, _, w = name.partition("*")
+                v = v[4:]
+                p = by_v.get(v, by_v["full"]).get(loc, out)[k, j]
+                out[k, j] = p if not w else float(w.split("+")[0]) * p + (1 - float(w.split("+")[0])) * cur[j]
+        return out
 
     def grid(self, raw: pd.DataFrame, now: pd.Timestamp) -> pd.DataFrame:
         """학습과 같은 정제·격자. 막 시작된(끝나지 않은) 5분 칸은 버린다."""
@@ -169,13 +202,13 @@ class Engine:
         t_bin = g.index[-1]
         out = {}
         split = prep.Split(train_end=g.index[0], val_end=g.index[0], end=g.index[-1])
-        data = task3.Data(g, self.norm, split, self.gru_ck["lookback"], use_calendar=True)
-        with torch.no_grad():
-            preds = {}
-            for l, loc in enumerate(data.locations):
-                if np.isnan(data.raw[l, t]).all():
-                    continue
-                preds[loc] = task3.predict(self.gru, data, l, np.array([t]), torch.device("cpu"))[0]
+        by_v = {}
+        for v, (m, ck) in self.grus.items():
+            data = task3.Data(g, self.norm, split, ck["lookback"], use_calendar=(v != "no_calendar"),
+                              absolute=(v == "absolute"), use_lags=(v != "no_lags"))
+            by_v[v] = {loc: task3.predict(m, data, l, np.array([t]), torch.device("cpu"))[0]
+                       for l, loc in enumerate(data.locations) if not np.isnan(data.raw[l, t]).all()}
+        preds = {loc: self.combine(loc, by_v, data.raw[data.locations.index(loc), t]) for loc in by_v["full"]}
         aed = task4.AEData(g, self.norm, self.ae_locs)
         if self.ae is None:
             x0, _, _ = aed.windows(0, np.array([task4.W - 1]))

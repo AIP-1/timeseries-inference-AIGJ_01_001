@@ -10,6 +10,7 @@ run() { step "$*"; "$@"; echo "exit=$?"; }
 step "과제 3 학습이 돌고 있으면 끝날 때까지 기다림"
 while pgrep -f "analysis.task3" > /dev/null; do sleep 60; done
 
+run docker compose run --rm lab python -m analysis.task3_select
 run docker compose run --rm lab python -m analysis.task4
 run docker compose run --rm lab python -m analysis.task5
 run docker compose run --rm lab python -m analysis.task6
@@ -18,7 +19,7 @@ run python3 scripts/trt_bench.py data/reports/task7
 run docker compose run --rm lab python -m analysis.task7 --report
 
 step "과제 8 서비스 시작 (mqtt 브로커 + infer)"
-docker compose up -d mqtt infer
+docker compose up -d --no-deps mqtt infer
 sleep 180
 run docker compose ps mqtt infer
 run curl -s localhost:8091/status
