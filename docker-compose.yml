@@ -16,7 +16,8 @@ services:
     volumes:
       - influxdb:/var/lib/influxdb2
     ports:
-      - "127.0.0.1:8086:8086"     # Jetson 안에서만 접근 (학습·추론 코드용)
+      # Jetson 안에서만 접근 (학습·추론 코드용). 8086 은 보드에서 이미 다른 InfluxDB 가 쓰고 있어 18086 을 쓴다.
+      - "127.0.0.1:${LOCAL_INFLUX_PORT:-18086}:8086"
     healthcheck:
       test: ["CMD", "influx", "ping"]
       interval: 30s
