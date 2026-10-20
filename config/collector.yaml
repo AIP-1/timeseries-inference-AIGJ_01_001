@@ -26,6 +26,7 @@ spaces:
     대표실-실내기: ceo_room
     대표실-실외기: ceo_room
     개발실-실내기: dev_room
+    개발실-실외기: dev_room
   # 특정 장비만 다른 공간으로 보낼 때 (devEui 또는 장치 ID → 공간 ID)
   by_device: {}
 
