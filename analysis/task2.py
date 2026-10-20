@@ -46,7 +46,7 @@ def co2_onsets(s: pd.Series) -> pd.DataFrame:
             continue
         night = g.between_time("04:00", "06:00").median()
         morning = g.between_time("06:00", "14:00")
-        if pd.isna(night) or morning.notna().sum() < 60:
+        if pd.isna(night) or morning.notna().sum() < 60 or g.index.max().hour < 14:   # 오늘처럼 덜 끝난 날 제외
             continue
         hit = morning[morning > night + 100]
         onset = hit.index[0] if len(hit) else None
@@ -78,6 +78,8 @@ def main():
         kept, removed = prep.clean(raw)
         del raw
         removed_all.append(removed)
+        iv = prep.report_intervals(kept).groupby(level=["location", "field"], observed=True).median()
+        dev_all[-1]["interval_min"] = [float(iv.get((r.location, r.field), float("nan"))) for r in dev_all[-1].itertuples()]
         grids.append(prep.to_grid(kept))
         grids_nofill.append(prep.to_grid(kept, prep.GridSpec(max_fill_bins=0)))
         del kept
@@ -105,12 +107,18 @@ def main():
     L.append("- 정규화 통계는 학습 기간으로만 계산(norm.csv).\n")
 
     L.append("## 장비 수와 원자료 건수\n")
+    L.append("interval_min: 장비별 기록 주기(분)의 중앙값. 1분 센서와 10분 센서가 섞여 있어 칸 채우기 조건을 장비마다 다르게 둔다.\n")
     L.append(md(dev))
+    used = set(grid.columns)
+    dropped = [f"{r.location}/{r.field}({r.rows}행)" for r in dev.itertuples() if (r.location, r.field) not in used]
+    if dropped:
+        L.append(f"\n- 분석에서 뺀 공간·항목(5분 칸의 5% 미만만 채워짐, 시험용 장비 등): {', '.join(dropped)}")
 
     L.append("\n## 정제 규칙\n")
     L.append(md(pd.DataFrame([{"field": k, "min": v[0], "max": v[1]} for k, v in prep.RULES.items()])))
     L.append("\n- 범위 밖 값은 버린다(0ppm 등 깨진 값). 장비별 1분 평균 → 공간별 장비 평균 → 5분 평균.")
     L.append("- 5분 칸에 1분 값이 3개 미만이면 칸을 비운다(막 시작된 칸, 끊김 직후 칸).")
+    L.append("- 10분처럼 느린 센서는 1개만 있어도 칸을 채우고, 다음 값이 올 때까지 마지막 값을 유지한다(장비 구성이 칸마다 바뀌면 공간 평균이 튄다).")
     L.append("- 15분 이하 결측은 선형 보간, 그보다 긴 결측은 비워 두고 그 시점은 평가에서 뺀다.\n")
     L.append("### 제거된 값\n")
     L.append(md(removed) if len(removed) else "없음")
