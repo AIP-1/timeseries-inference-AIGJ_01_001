@@ -40,3 +40,29 @@ def test_split_is_chronological_and_norm_uses_train_only():
     assert sp.train_end < sp.val_end < sp.end
     assert set(sp.label(idx)) == {"train", "val", "test"}
     assert prep.normalize_stats(grid, sp)["mean"].iloc[0] < 50   # 검증·시험의 1000 이 섞이지 않음
+
+
+def _toy_grid(days=90):
+    idx = pd.date_range("2026-01-01", periods=24 * 12 * days, freq="5min", tz="UTC")
+    hour = idx.tz_convert(prep.TZ).hour
+    co2 = 450 + 400 * ((hour >= 9) & (hour < 18)) + np.random.default_rng(0).normal(0, 10, len(idx))
+    cols = {("A", "co2"): co2, ("A", "temperature"): 22 + 0.1 * np.sin(np.arange(len(idx)) / 50),
+            ("A", "humidity"): np.full(len(idx), 40.0)}
+    grid = pd.DataFrame(cols, index=idx)
+    grid.columns = pd.MultiIndex.from_tuples(grid.columns, names=["location", "field"])
+    return grid
+
+
+def test_task3_samples_stay_inside_their_split():
+    from analysis import task3
+    grid = _toy_grid()
+    sp = prep.make_split(grid.index, 28, 28)
+    data = task3.Data(grid, prep.normalize_stats(grid, sp), sp)
+    for part in ("train", "val"):
+        _, t = data.candidates(part)
+        lab = sp.label(grid.index)
+        assert (lab[t] == part).all() and (lab[t + task3.HORIZON] == part).all()
+    # 변화량 목표를 되돌리면 실제 미래값이 나온다
+    li, ti = np.array([0]), np.array([500])
+    back = data.to_values(li, ti, data.Y[li, ti])
+    assert np.allclose(back[0, :, 0], grid[("A", "co2")].iloc[501:513].to_numpy(), atol=1e-2)

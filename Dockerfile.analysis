@@ -4,5 +4,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends fonts-nanum && 
 WORKDIR /app
 COPY requirements-analysis.txt .
 RUN pip install --no-cache-dir -r requirements-analysis.txt
+# 과제 3~: CPU 판 torch (보드 GPU 를 컨테이너에서 쓰려면 JetPack 전용 이미지가 필요해 우선 CPU 로 학습)
+RUN pip install --no-cache-dir torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
 COPY analysis ./analysis
 ENV PYTHONUNBUFFERED=1 DATA_DIR=/data MPLCONFIGDIR=/tmp/mpl
