@@ -6,5 +6,7 @@ COPY requirements-analysis.txt .
 RUN pip install --no-cache-dir -r requirements-analysis.txt
 # 과제 3~: CPU 판 torch (보드 GPU 를 컨테이너에서 쓰려면 JetPack 전용 이미지가 필요해 우선 CPU 로 학습)
 RUN pip install --no-cache-dir torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+# 과제 6: 사전학습 시계열 모델(torch 는 위 CPU 판을 그대로 씀)
+RUN pip install --no-cache-dir chronos-forecasting==2.3.2
 COPY analysis ./analysis
-ENV PYTHONUNBUFFERED=1 DATA_DIR=/data MPLCONFIGDIR=/tmp/mpl
+ENV PYTHONUNBUFFERED=1 DATA_DIR=/data MPLCONFIGDIR=/tmp/mpl HF_HOME=/data/hf
