@@ -533,7 +533,7 @@ def main():
     inj = AEData(g_inj, norm, locations)
     sc = ae_scores(model, inj, device)
     test_mask = idx >= test_start
-    ae_flags = {(k[0], k[1], "ae"): (s > thr[k])[test_mask] for k, s in sc.items()}
+    ae_flags = {(k[0], k[1], "ae"): (s > thr[k])[test_mask] for k, s in sc.items() if k in thr}  # 검증 기간 값이 없는 항목(창고)은 임계값 없음
     rule_flags = {k: v[test_mask] for k, v in rule_scores(g_inj, ref, params).items()}
 
     ae_raw, ru_raw = active_from(ae_flags), active_from(rule_flags)      # 탐지 판정용(켜져 있는 칸 전부)
@@ -558,7 +558,7 @@ def main():
     # 4) 임계값 배율을 바꿔 가며(오토인코더만, 규칙은 고정) 탐지율·헛경보
     sweep = []
     for mult in (0.5, 0.7, 0.85, 1.0, 1.25, 1.5, 2.0, 3.0):
-        fl = {(k[0], k[1], "ae"): (s > thr[k] * mult)[test_mask] for k, s in sc.items()}
+        fl = {(k[0], k[1], "ae"): (s > thr[k] * mult)[test_mask] for k, s in sc.items() if k in thr}
         al_raw = active_from(fl)
         al = merge_alarms(alarms_from(fl)).reset_index(drop=True)
         ev_ae, fa_ae = evaluate(al, events, test_start, test_end, al_raw)
