@@ -83,6 +83,9 @@ def main():
         del kept
     grid = pd.concat(grids, axis=1).sort_index(axis=1)
     grid_nofill = pd.concat(grids_nofill, axis=1).sort_index(axis=1)
+    # 값이 몇 건뿐인 공간(시험용 장비 등)은 격자에서 뺀다. 원자료 표에는 남긴다.
+    sparse = grid.columns[grid.notna().mean() < 0.01]
+    grid, grid_nofill = grid.drop(columns=sparse), grid_nofill.drop(columns=sparse)
     removed = pd.concat(removed_all, ignore_index=True)
     dev = pd.concat(dev_all, ignore_index=True)
     split = prep.make_split(grid.index, a.test_days, a.val_days)
@@ -109,8 +112,11 @@ def main():
 
     L.append("\n## 정제 규칙\n")
     L.append(md(pd.DataFrame([{"field": k, "min": v[0], "max": v[1]} for k, v in prep.RULES.items()])))
-    L.append("\n- 범위 밖 값은 버린다(0ppm 등 깨진 값). 장비별 1분 평균 → 공간별 장비 평균 → 5분 평균.")
-    L.append("- 5분 칸에 1분 값이 3개 미만이면 칸을 비운다(막 시작된 칸, 끊김 직후 칸).")
+    L.append("\n- 범위 밖 값은 버린다(0ppm 등 깨진 값). 장비별 5분 평균 → 공간별 장비 평균.")
+    L.append("- 장비 주기에 맞춰 5분 칸의 최소 개수를 정한다: 1분 장비는 3개 미만이면 비움(막 시작된 칸, 끊김 직후 칸), 2분·10분 장비는 1개. 10분 장비는 다음 칸까지 값을 유지한다(공간 평균이 칸마다 흔들리지 않게).")
+    if len(sparse):
+        L.append("- 5분 칸이 1% 미만으로 채워진 공간·항목은 격자에서 뺐다(시험용 장비): "
+                 + ", ".join(f"{l}/{f}" for l, f in sparse))
     L.append("- 15분 이하 결측은 선형 보간, 그보다 긴 결측은 비워 두고 그 시점은 평가에서 뺀다.\n")
     L.append("### 제거된 값\n")
     L.append(md(removed) if len(removed) else "없음")

@@ -40,3 +40,17 @@ def test_split_is_chronological_and_norm_uses_train_only():
     assert sp.train_end < sp.val_end < sp.end
     assert set(sp.label(idx)) == {"train", "val", "test"}
     assert prep.normalize_stats(grid, sp)["mean"].iloc[0] < 50   # 검증·시험의 1000 이 섞이지 않음
+
+
+def test_to_grid_handles_mixed_sensor_intervals():
+    t1 = pd.date_range("2026-01-01", periods=60, freq="1min", tz="UTC")
+    t10 = pd.date_range("2026-01-01 00:02", periods=6, freq="10min", tz="UTC")
+    df = pd.concat([
+        pd.DataFrame({"time": t1, "device_id": "fast", "location": "L", "value": 20.0}),
+        pd.DataFrame({"time": t10, "device_id": "slow", "location": "L", "value": 18.0}),   # 2℃ 낮은 10분 장비
+        pd.DataFrame({"time": t10, "device_id": "only10", "location": "M", "value": 25.0}),
+    ])
+    df["field"] = pd.Categorical(["temperature"] * len(df), categories=list(prep.FIELDS))
+    g = prep.to_grid(df, prep.GridSpec(max_fill_bins=0))
+    assert (g[("L", "temperature")].iloc[:-1] == 19.0).all()   # 칸마다 흔들리지 않음
+    assert g[("M", "temperature")].iloc[:-1].notna().all()     # 10분 장비만 있어도 칸이 채워짐

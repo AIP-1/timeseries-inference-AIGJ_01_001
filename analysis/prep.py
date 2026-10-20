@@ -28,7 +28,7 @@ RULES = {
 @dataclass
 class GridSpec:
     freq: str = "5min"        # 분석 간격
-    min_minutes: int = 3      # 5분 칸 안에 1분 값이 이 개수 이상 있어야 칸을 채운다 (막 시작된 칸 배제)
+    min_minutes: int = 3      # 1분 장비는 5분 칸에 값이 3개 이상이어야 칸을 채운다 (막 시작된 칸 배제). 느린 장비는 to_grid 참고
     max_fill_bins: int = 3    # 짧은 결측(15분 이하)만 선형 보간, 그보다 긴 결측은 비워 둔다
 
 
@@ -72,23 +72,34 @@ def fill_short_gaps(s: pd.Series, max_len: int) -> pd.Series:
 
 
 def to_grid(df: pd.DataFrame, spec: GridSpec = GridSpec()) -> pd.DataFrame:
-    """장비별 1분 평균 → 공간별 장비 평균 → 5분 평균(최소 개수 조건) → 짧은 결측 보간.
+    """장비별 5분 평균(장비 주기에 맞춘 최소 개수) → 장비 주기만큼 앞 값 유지 → 공간별 장비 평균 → 짧은 결측 보간.
 
+    장비마다 1·2·10분 등 주기가 달라서, 공간 평균을 1분 단위로 먼저 내면 10분 장비가 칸마다 들어왔다 빠지며
+    평균이 톱니처럼 흔들린다(오프셋이 큰 장비일수록 심함). 그래서 장비별로 5분 칸을 먼저 만든다.
     반환: index=UTC 5분 시각(칸 시작), columns=MultiIndex(location, field)
     """
     d = df.copy()
     d["minute"] = d["time"].dt.floor("1min")
-    # 센서마다 기록 주기가 달라도 1분 단위로 맞춘다. 같은 분에 여러 번 오면 평균.
-    per_dev = d.groupby(["location", "field", "device_id", "minute"], observed=True)["value"].mean()
-    # 한 공간에 같은 항목 센서가 여럿이면 평균 (위치 차이는 공간 대표값으로 흡수)
-    per_space = per_dev.groupby(level=["location", "field", "minute"], observed=True).mean().unstack(["location", "field"])
-    per_space = per_space.sort_index()
-    full = pd.date_range(per_space.index.min().floor(spec.freq), per_space.index.max(), freq="1min", tz="UTC")
-    per_space = per_space.reindex(full)
-    agg = per_space.resample(spec.freq).agg(["mean", "count"])
-    mean = agg.xs("mean", axis=1, level=-1)
-    count = agg.xs("count", axis=1, level=-1)
-    grid = mean.where(count >= spec.min_minutes)
+    # 같은 분에 여러 번 오면 평균
+    per_min = d.groupby(["location", "field", "device_id", "minute"], observed=True)["value"].mean()
+    mins = per_min.index.get_level_values("minute")
+    bins = pd.date_range(mins.min().floor(spec.freq), mins.max(), freq=spec.freq)
+    width = pd.Timedelta(spec.freq)
+    per_space: dict[tuple, list[pd.Series]] = {}
+    for (loc, field, _dev), s in per_min.groupby(level=["location", "field", "device_id"], observed=True):
+        s = s.droplevel(["location", "field", "device_id"])
+        step = s.index.to_series().diff().median()
+        step = pd.Timedelta("1min") if pd.isna(step) else max(step, pd.Timedelta("1min"))
+        # 칸 하나에 기대되는 개수의 60% 이상(최대 min_minutes, 최소 1). 1분 장비=3, 2분·10분 장비=1
+        need = int(np.clip(width / step * 0.6, 1, spec.min_minutes))
+        r = s.resample(spec.freq).agg(["mean", "count"])
+        v = r["mean"].where(r["count"] >= need).reindex(bins)
+        # 10분 장비는 다음 칸 하나까지 값 유지. 며칠에 한 번 오는 시험용 장비가 며칠을 채우지 않게 최대 2칸
+        hold = min(int(np.ceil(step / width)) - 1, 2)
+        if hold > 0:
+            v = v.ffill(limit=hold)
+        per_space.setdefault((loc, field), []).append(v)
+    grid = pd.DataFrame({k: pd.concat(v, axis=1).mean(axis=1) for k, v in per_space.items()}, index=bins)
     if spec.max_fill_bins > 0:
         grid = grid.apply(fill_short_gaps, max_len=spec.max_fill_bins)
     grid.columns = pd.MultiIndex.from_tuples(grid.columns, names=["location", "field"])
