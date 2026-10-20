@@ -84,7 +84,8 @@ def inject(grid: pd.DataFrame, start: pd.Timestamp, per_type: int, seed: int) ->
         main = "co2" if has_co2 else "temperature"
         if g.loc[idx, (loc, main)].notna().sum() == 0:      # 시험 기간에 값이 없는 공간(창고: 장기 결측)
             continue
-        used = _used_day_hours(g[(loc, "co2")]).intersection(idx) if has_co2 else pd.DatetimeIndex([])
+        valid = idx[g.loc[idx, (loc, main)].notna().to_numpy()]      # 값이 있는 칸에만 고장을 넣는다(빈 구간에 넣으면 찾을 수 없는 사건이 됨)
+        used = _used_day_hours(g[(loc, "co2")]).intersection(valid) if has_co2 else pd.DatetimeIndex([])
         for fault in FAULTS:
             if fault in ("drift", "ventilation") and not has_co2:
                 continue
@@ -92,7 +93,7 @@ def inject(grid: pd.DataFrame, start: pd.Timestamp, per_type: int, seed: int) ->
                 continue
             for _ in range(per_type):
                 if fault == "spike":
-                    ok = pick(loc, idx[g.loc[idx, (loc, main)].notna().to_numpy()], STEP * 0)
+                    ok = pick(loc, valid, STEP * 0)
                     if not ok:
                         continue
                     a, _b = ok
@@ -101,7 +102,7 @@ def inject(grid: pd.DataFrame, start: pd.Timestamp, per_type: int, seed: int) ->
                     events.append(Event(loc, fault, (main,), a, a))
                 elif fault == "stuck":
                     dur = STEP * int(rng.integers(12, 49))                 # 1~4시간
-                    ok = pick(loc, idx, dur)
+                    ok = pick(loc, valid, dur)
                     if not ok:
                         continue
                     a, b = ok
@@ -113,7 +114,7 @@ def inject(grid: pd.DataFrame, start: pd.Timestamp, per_type: int, seed: int) ->
                 elif fault == "drift":
                     ramp = STEP * int(rng.integers(36, 73))                # 3~6시간에 걸쳐
                     hold = pd.Timedelta("12h")                           # 틀어진 채로 유지(다음 점검 전까지)
-                    ok = pick(loc, idx, ramp + hold)
+                    ok = pick(loc, valid, ramp + hold)
                     if not ok:
                         continue
                     a, b = ok
