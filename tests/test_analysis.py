@@ -68,18 +68,15 @@ def test_task3_samples_stay_inside_their_split():
     assert np.allclose(back[0, :, 0], grid[("A", "co2")].iloc[501:513].to_numpy(), atol=1e-2)
 
 
-def test_grid_keeps_slow_sensors_and_stable_device_mix():
-    t1 = pd.date_range("2026-01-01", periods=600, freq="1min", tz="UTC")
-    t10 = t1[::10]
-    fast = pd.DataFrame({"time": t1, "device_id": "fast", "value": 20.0})
-    slow = pd.DataFrame({"time": t10, "device_id": "slow", "value": 24.0})
-    only_slow = slow.assign(location="M")                     # 10분 센서 하나뿐인 공간 (회의실)
-    mixed = pd.concat([fast, slow]).assign(location="L")     # 1분 + 10분 센서가 섞인 공간 (실습실)
-    tiny = pd.DataFrame({"time": t1[:2], "device_id": "t", "value": 21.0, "location": "T"})   # 시험용 장비
-    df = pd.concat([only_slow, mixed, tiny], ignore_index=True).assign(field="temperature")
-    for c in ("device_id", "location"):
-        df[c] = df[c].astype("category")
-    g = prep.to_grid(df)
-    assert ("M", "temperature") in g and g[("M", "temperature")].notna().mean() > 0.95
-    assert ("T", "temperature") not in g
-    assert np.allclose(g[("L", "temperature")].dropna(), 22.0)  # 칸마다 두 장비 평균, 튀지 않음
+def test_to_grid_handles_mixed_sensor_intervals():
+    t1 = pd.date_range("2026-01-01", periods=60, freq="1min", tz="UTC")
+    t10 = pd.date_range("2026-01-01 00:02", periods=6, freq="10min", tz="UTC")
+    df = pd.concat([
+        pd.DataFrame({"time": t1, "device_id": "fast", "location": "L", "value": 20.0}),
+        pd.DataFrame({"time": t10, "device_id": "slow", "location": "L", "value": 18.0}),   # 2℃ 낮은 10분 장비
+        pd.DataFrame({"time": t10, "device_id": "only10", "location": "M", "value": 25.0}),
+    ])
+    df["field"] = pd.Categorical(["temperature"] * len(df), categories=list(prep.FIELDS))
+    g = prep.to_grid(df, prep.GridSpec(max_fill_bins=0))
+    assert (g[("L", "temperature")].iloc[:-1] == 19.0).all()   # 칸마다 흔들리지 않음
+    assert g[("M", "temperature")].iloc[:-1].notna().all()     # 10분 장비만 있어도 칸이 채워짐
