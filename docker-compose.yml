@@ -51,5 +51,18 @@ services:
       driver: json-file
       options: { max-size: "10m", max-file: "3" }
 
+  # 분석 도구 (상시 실행 아님). 사용: docker compose run --rm lab python -m analysis.task2
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile.analysis
+    image: aigj/lab:latest
+    profiles: ["tools"]
+    env_file: .env          # INFLUX_* = 강사 InfluxDB (iot-bucket 읽기)
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - ./data:/data
+      - ./analysis:/app/analysis:ro   # 코드 수정 시 이미지 다시 빌드 불필요
+
 volumes:
   influxdb:
