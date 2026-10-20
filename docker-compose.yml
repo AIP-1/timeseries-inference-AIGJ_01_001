@@ -1,0 +1,17 @@
+# 수집기 상시 가동. 보드 재부팅 뒤에도 Docker 가 자동으로 다시 띄운다(restart: unless-stopped).
+services:
+  collector:
+    build: .
+    image: aigj/collector:latest
+    restart: unless-stopped
+    env_file: .env
+    # 호스트 계정 권한으로 실행해 data/ 파일을 sudo 없이 지울 수 있게 한다
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - ./data:/data
+      - ./config:/app/config:ro   # 설정만 바꾸고 재시작하면 반영 (이미지 다시 빌드 불필요)
+    ports:
+      - "8090:8090"               # 수집 현황: http://<jetson>:8090/status
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
