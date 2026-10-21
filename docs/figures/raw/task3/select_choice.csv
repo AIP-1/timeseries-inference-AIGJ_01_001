@@ -1,0 +1,29 @@
+location,field,horizon_min,candidate
+사무실,co2,5,gru_no_calendar
+사무실,co2,15,gru_no_calendar
+사무실,co2,30,gru_full
+사무실,co2,60,gru_full
+사무실,temperature,5,gru_no_calendar*0.5+persistence
+사무실,temperature,15,gru_no_calendar*0.75+persistence
+사무실,temperature,30,gru_full*0.75+persistence
+사무실,temperature,60,gru_full*0.75+persistence
+사무실 밖,temperature,5,persistence
+사무실 밖,temperature,15,gru_no_calendar
+사무실 밖,temperature,30,gru_no_calendar
+사무실 밖,temperature,60,gru_no_calendar
+실습실,co2,5,gru_no_calendar
+실습실,co2,15,gru_no_calendar
+실습실,co2,30,gru_no_calendar
+실습실,co2,60,gru_full*0.75+persistence
+실습실,temperature,5,gru_no_calendar
+실습실,temperature,15,gru_no_calendar
+실습실,temperature,30,gru_no_calendar*0.75+persistence
+실습실,temperature,60,gru_full*0.75+persistence
+회의실,co2,5,persistence
+회의실,co2,15,gru_no_calendar
+회의실,co2,30,gru_no_calendar*0.75+persistence
+회의실,co2,60,gru_full*0.75+persistence
+회의실,temperature,5,persistence
+회의실,temperature,15,gru_no_calendar*0.75+persistence
+회의실,temperature,30,gru_full*0.75+persistence
+회의실,temperature,60,gru_full*0.5+persistence

@@ -1,0 +1,505 @@
+location,field,period,horizon_min,candidate,mae,n
+사무실,co2,val,5,persistence,13.862688438843804,8052
+사무실,co2,val,5,gru_full,13.217988080073516,8052
+사무실,co2,val,5,gru_full*0.25+persistence,13.609705096385518,8052
+사무실,co2,val,5,gru_full*0.5+persistence,13.420857897103277,8052
+사무실,co2,val,5,gru_full*0.75+persistence,13.286701843860548,8052
+사무실,co2,val,5,gru_no_calendar,13.041243949696844,8052
+사무실,co2,val,5,gru_no_calendar*0.25+persistence,13.553087664669091,8052
+사무실,co2,val,5,gru_no_calendar*0.5+persistence,13.311623978366084,8052
+사무실,co2,val,5,gru_no_calendar*0.75+persistence,13.141289345731323,8052
+사무실,co2,val,15,persistence,27.571273962893535,8052
+사무실,co2,val,15,gru_full,24.59564717231671,8052
+사무실,co2,val,15,gru_full*0.25+persistence,26.319198865175128,8052
+사무실,co2,val,15,gru_full*0.5+persistence,25.3645454573501,8052
+사무실,co2,val,15,gru_full*0.75+persistence,24.785557300133664,8052
+사무실,co2,val,15,gru_no_calendar,24.358691704906875,8052
+사무실,co2,val,15,gru_no_calendar*0.25+persistence,26.175354680432292,8052
+사무실,co2,val,15,gru_no_calendar*0.5+persistence,25.11503515797827,8052
+사무실,co2,val,15,gru_no_calendar*0.75+persistence,24.489223312514373,8052
+사무실,co2,val,30,persistence,44.517723996901005,8052
+사무실,co2,val,30,gru_full,37.685495762225706,8052
+사무실,co2,val,30,gru_full*0.25+persistence,41.78153550157012,8052
+사무실,co2,val,30,gru_full*0.5+persistence,39.64606028602778,8052
+사무실,co2,val,30,gru_full*0.75+persistence,38.18672587702183,8052
+사무실,co2,val,30,gru_no_calendar,38.2300785782914,8052
+사무실,co2,val,30,gru_no_calendar*0.25+persistence,41.66006195515587,8052
+사무실,co2,val,30,gru_no_calendar*0.5+persistence,39.52798075706759,8052
+사무실,co2,val,30,gru_no_calendar*0.75+persistence,38.30261638753164,8052
+사무실,co2,val,60,persistence,72.4183466873889,8052
+사무실,co2,val,60,gru_full,56.331720730231524,8052
+사무실,co2,val,60,gru_full*0.25+persistence,66.37192141991969,8052
+사무실,co2,val,60,gru_full*0.5+persistence,61.312033325892685,8052
+사무실,co2,val,60,gru_full*0.75+persistence,57.633610145997125,8052
+사무실,co2,val,60,gru_no_calendar,59.2721651876026,8052
+사무실,co2,val,60,gru_no_calendar*0.25+persistence,66.62923040356851,8052
+사무실,co2,val,60,gru_no_calendar*0.5+persistence,62.13766625220066,8052
+사무실,co2,val,60,gru_no_calendar*0.75+persistence,59.2873982999435,8052
+사무실,co2,test,5,persistence,8.693255000402884,7902
+사무실,co2,test,5,gru_full,8.351503527155408,7902
+사무실,co2,test,5,gru_full*0.25+persistence,8.549581193163618,7902
+사무실,co2,test,5,gru_full*0.5+persistence,8.444365022273583,7902
+사무실,co2,test,5,gru_full*0.75+persistence,8.378604426440695,7902
+사무실,co2,test,5,gru_no_calendar,8.209896561707826,7902
+사무실,co2,test,5,gru_no_calendar*0.25+persistence,8.513787135628922,7902
+사무실,co2,test,5,gru_no_calendar*0.5+persistence,8.372173410703851,7902
+사무실,co2,test,5,gru_no_calendar*0.75+persistence,8.27164881732065,7902
+사무실,co2,test,15,persistence,14.682194776638825,7902
+사무실,co2,test,15,gru_full,13.064086334761473,7902
+사무실,co2,test,15,gru_full*0.25+persistence,13.981167248006834,7902
+사무실,co2,test,15,gru_full*0.5+persistence,13.463202130610476,7902
+사무실,co2,test,15,gru_full*0.75+persistence,13.152360379801495,7902
+사무실,co2,test,15,gru_no_calendar,12.788602349607892,7902
+사무실,co2,test,15,gru_no_calendar*0.25+persistence,13.843550367072938,7902
+사무실,co2,test,15,gru_no_calendar*0.5+persistence,13.22124708480275,7902
+사무실,co2,test,15,gru_no_calendar*0.75+persistence,12.85994831877882,7902
+사무실,co2,test,30,persistence,22.56137697475224,7902
+사무실,co2,test,30,gru_full,18.28193681929812,7902
+사무실,co2,test,30,gru_full*0.25+persistence,20.813099777387745,7902
+사무실,co2,test,30,gru_full*0.5+persistence,19.43128601166907,7902
+사무실,co2,test,30,gru_full*0.75+persistence,18.546844065325136,7902
+사무실,co2,test,30,gru_no_calendar,18.509634374697217,7902
+사무실,co2,test,30,gru_no_calendar*0.25+persistence,20.721948159733653,7902
+사무실,co2,test,30,gru_no_calendar*0.5+persistence,19.347145798899682,7902
+사무실,co2,test,30,gru_no_calendar*0.75+persistence,18.554924748873777,7902
+사무실,co2,test,60,persistence,37.58325334344747,7902
+사무실,co2,test,60,gru_full,27.692457831983052,7902
+사무실,co2,test,60,gru_full*0.25+persistence,33.54349913002117,7902
+사무실,co2,test,60,gru_full*0.5+persistence,30.297967737459043,7902
+사무실,co2,test,60,gru_full*0.75+persistence,28.211530515013752,7902
+사무실,co2,test,60,gru_no_calendar,30.17967303292234,7902
+사무실,co2,test,60,gru_no_calendar*0.25+persistence,34.14154004073089,7902
+사무실,co2,test,60,gru_no_calendar*0.5+persistence,31.63727774073341,7902
+사무실,co2,test,60,gru_no_calendar*0.75+persistence,30.200093202969903,7902
+사무실,temperature,val,5,persistence,0.03495570645661598,8052
+사무실,temperature,val,5,gru_full,0.03594337596978587,8052
+사무실,temperature,val,5,gru_full*0.25+persistence,0.03511282743888889,8052
+사무실,temperature,val,5,gru_full*0.5+persistence,0.03531096494440646,8052
+사무실,temperature,val,5,gru_full*0.75+persistence,0.03559100550913538,8052
+사무실,temperature,val,5,gru_no_calendar,0.03498128984795242,8052
+사무실,temperature,val,5,gru_no_calendar*0.25+persistence,0.034778765997244714,8052
+사무실,temperature,val,5,gru_no_calendar*0.5+persistence,0.03467832059334358,8052
+사무실,temperature,val,5,gru_no_calendar*0.75+persistence,0.034733777489167096,8052
+사무실,temperature,val,15,persistence,0.050289450151317465,8052
+사무실,temperature,val,15,gru_full,0.0491254513262518,8052
+사무실,temperature,val,15,gru_full*0.25+persistence,0.049087027856738664,8052
+사무실,temperature,val,15,gru_full*0.5+persistence,0.048336388279535375,8052
+사무실,temperature,val,15,gru_full*0.75+persistence,0.04832995713675016,8052
+사무실,temperature,val,15,gru_no_calendar,0.04704286255057155,8052
+사무실,temperature,val,15,gru_no_calendar*0.25+persistence,0.04875790883342366,8052
+사무실,temperature,val,15,gru_no_calendar*0.5+persistence,0.04757296440912845,8052
+사무실,temperature,val,15,gru_no_calendar*0.75+persistence,0.046917763860203174,8052
+사무실,temperature,val,30,persistence,0.08174675492818712,8052
+사무실,temperature,val,30,gru_full,0.0747506430181057,8052
+사무실,temperature,val,30,gru_full*0.25+persistence,0.07764105996976607,8052
+사무실,temperature,val,30,gru_full*0.5+persistence,0.07476919264682062,8052
+사무실,temperature,val,30,gru_full*0.75+persistence,0.07369743279420612,8052
+사무실,temperature,val,30,gru_no_calendar,0.07634197297643443,8052
+사무실,temperature,val,30,gru_no_calendar*0.25+persistence,0.07838133722173593,8052
+사무실,temperature,val,30,gru_no_calendar*0.5+persistence,0.07607438122521451,8052
+사무실,temperature,val,30,gru_no_calendar*0.75+persistence,0.07521401159927966,8052
+사무실,temperature,val,60,persistence,0.14142508205938742,8052
+사무실,temperature,val,60,gru_full,0.11938846306722672,8052
+사무실,temperature,val,60,gru_full*0.25+persistence,0.13127275142158018,8052
+사무실,temperature,val,60,gru_full*0.5+persistence,0.12333397040956955,8052
+사무실,temperature,val,60,gru_full*0.75+persistence,0.11901319897476856,8052
+사무실,temperature,val,60,gru_no_calendar,0.12910993053021266,8052
+사무실,temperature,val,60,gru_no_calendar*0.25+persistence,0.13430903512212808,8052
+사무실,temperature,val,60,gru_no_calendar*0.5+persistence,0.12944690125887512,8052
+사무실,temperature,val,60,gru_no_calendar*0.75+persistence,0.12737812453458042,8052
+사무실,temperature,test,5,persistence,0.011972936911692773,7902
+사무실,temperature,test,5,gru_full,0.01393067483749911,7902
+사무실,temperature,test,5,gru_full*0.25+persistence,0.01240655308402179,7902
+사무실,temperature,test,5,gru_full*0.5+persistence,0.012853042049306582,7902
+사무실,temperature,test,5,gru_full*0.75+persistence,0.01335290274237476,7902
+사무실,temperature,test,5,gru_no_calendar,0.013369487104944506,7902
+사무실,temperature,test,5,gru_no_calendar*0.25+persistence,0.012227186037902137,7902
+사무실,temperature,test,5,gru_no_calendar*0.5+persistence,0.012504771581875225,7902
+사무실,temperature,test,5,gru_no_calendar*0.75+persistence,0.012875944775769874,7902
+사무실,temperature,test,15,persistence,0.02239877825838136,7902
+사무실,temperature,test,15,gru_full,0.025778786860306453,7902
+사무실,temperature,test,15,gru_full*0.25+persistence,0.022078487306448576,7902
+사무실,temperature,test,15,gru_full*0.5+persistence,0.022467238846925867,7902
+사무실,temperature,test,15,gru_full*0.75+persistence,0.02366510103757217,7902
+사무실,temperature,test,15,gru_no_calendar,0.021614612008734192,7902
+사무실,temperature,test,15,gru_no_calendar*0.25+persistence,0.02156868049749028,7902
+사무실,temperature,test,15,gru_no_calendar*0.5+persistence,0.02106993302789648,7902
+사무실,temperature,test,15,gru_no_calendar*0.75+persistence,0.021078356245866882,7902
+사무실,temperature,test,30,persistence,0.03831183810802509,7902
+사무실,temperature,test,30,gru_full,0.03723542438643216,7902
+사무실,temperature,test,30,gru_full*0.25+persistence,0.0353880407719092,7902
+사무실,temperature,test,30,gru_full*0.5+persistence,0.03401993920730054,7902
+사무실,temperature,test,30,gru_full*0.75+persistence,0.03464198800407763,7902
+사무실,temperature,test,30,gru_no_calendar,0.035818676138732804,7902
+사무실,temperature,test,30,gru_no_calendar*0.25+persistence,0.03548023834074036,7902
+사무실,temperature,test,30,gru_no_calendar*0.5+persistence,0.03391279893052997,7902
+사무실,temperature,test,30,gru_no_calendar*0.75+persistence,0.03395918446895413,7902
+사무실,temperature,test,60,persistence,0.06907430946660989,7902
+사무실,temperature,test,60,gru_full,0.058261460758287434,7902
+사무실,temperature,test,60,gru_full*0.25+persistence,0.06096774323081343,7902
+사무실,temperature,test,60,gru_full*0.5+persistence,0.05580427531380196,7902
+사무실,temperature,test,60,gru_full*0.75+persistence,0.05481338712180062,7902
+사무실,temperature,test,60,gru_no_calendar,0.05714641996831177,7902
+사무실,temperature,test,60,gru_no_calendar*0.25+persistence,0.06147290597653516,7902
+사무실,temperature,test,60,gru_no_calendar*0.5+persistence,0.056268097629609874,7902
+사무실,temperature,test,60,gru_no_calendar*0.75+persistence,0.05455823277739204,7902
+사무실 밖,temperature,val,5,persistence,0.03994288683766698,8052
+사무실 밖,temperature,val,5,gru_full,0.11663555992342499,8052
+사무실 밖,temperature,val,5,gru_full*0.25+persistence,0.04543210959114723,8052
+사무실 밖,temperature,val,5,gru_full*0.5+persistence,0.06377900706791961,8052
+사무실 밖,temperature,val,5,gru_full*0.75+persistence,0.08896930888110112,8052
+사무실 밖,temperature,val,5,gru_no_calendar,0.07066510082534813,8052
+사무실 밖,temperature,val,5,gru_no_calendar*0.25+persistence,0.04158149485675719,8052
+사무실 밖,temperature,val,5,gru_no_calendar*0.5+persistence,0.04779824414658298,8052
+사무실 밖,temperature,val,5,gru_no_calendar*0.75+persistence,0.05789968846629522,8052
+사무실 밖,temperature,val,15,persistence,0.08462618597099808,8052
+사무실 밖,temperature,val,15,gru_full,0.13616438760013647,8052
+사무실 밖,temperature,val,15,gru_full*0.25+persistence,0.0905018489987354,8052
+사무실 밖,temperature,val,15,gru_full*0.5+persistence,0.10210614149924599,8052
+사무실 밖,temperature,val,15,gru_full*0.75+persistence,0.1177858995431937,8052
+사무실 밖,temperature,val,15,gru_no_calendar,0.07158191679013172,8052
+사무실 밖,temperature,val,15,gru_no_calendar*0.25+persistence,0.07915346834473627,8052
+사무실 밖,temperature,val,15,gru_no_calendar*0.5+persistence,0.07463817956491424,8052
+사무실 밖,temperature,val,15,gru_no_calendar*0.75+persistence,0.0720022787694841,8052
+사무실 밖,temperature,val,30,persistence,0.1561065684250795,8052
+사무실 밖,temperature,val,30,gru_full,0.13684603354259325,8052
+사무실 밖,temperature,val,30,gru_full*0.25+persistence,0.14034858676135334,8052
+사무실 밖,temperature,val,30,gru_full*0.5+persistence,0.1298787381834967,8052
+사무실 밖,temperature,val,30,gru_full*0.75+persistence,0.12879361617168383,8052
+사무실 밖,temperature,val,30,gru_no_calendar,0.1222512102577145,8052
+사무실 밖,temperature,val,30,gru_no_calendar*0.25+persistence,0.14653237909448721,8052
+사무실 밖,temperature,val,30,gru_no_calendar*0.5+persistence,0.1374210548590382,8052
+사무실 밖,temperature,val,30,gru_no_calendar*0.75+persistence,0.129178299989146,8052
+사무실 밖,temperature,val,60,persistence,0.2903055209042833,8052
+사무실 밖,temperature,val,60,gru_full,0.5073006192191702,8052
+사무실 밖,temperature,val,60,gru_full*0.25+persistence,0.2579712078337994,8052
+사무실 밖,temperature,val,60,gru_full*0.5+persistence,0.3038950147642997,8052
+사무실 밖,temperature,val,60,gru_full*0.75+persistence,0.3991634068178763,8052
+사무실 밖,temperature,val,60,gru_no_calendar,0.22464083654040787,8052
+사무실 밖,temperature,val,60,gru_no_calendar*0.25+persistence,0.27222822373385935,8052
+사무실 밖,temperature,val,60,gru_no_calendar*0.5+persistence,0.2549070202173194,8052
+사무실 밖,temperature,val,60,gru_no_calendar*0.75+persistence,0.2387340511188422,8052
+사무실 밖,temperature,test,5,persistence,0.038761932317047776,7902
+사무실 밖,temperature,test,5,gru_full,0.12884888640538678,7902
+사무실 밖,temperature,test,5,gru_full*0.25+persistence,0.046537201484828865,7902
+사무실 밖,temperature,test,5,gru_full*0.5+persistence,0.06862248918190089,7902
+사무실 밖,temperature,test,5,gru_full*0.75+persistence,0.09771839874178752,7902
+사무실 밖,temperature,test,5,gru_no_calendar,0.0703194897496468,7902
+사무실 밖,temperature,test,5,gru_no_calendar*0.25+persistence,0.04085854565575285,7902
+사무실 밖,temperature,test,5,gru_no_calendar*0.5+persistence,0.04732749094633596,7902
+사무실 밖,temperature,test,5,gru_no_calendar*0.75+persistence,0.05750347891508009,7902
+사무실 밖,temperature,test,15,persistence,0.07904960402534811,7902
+사무실 밖,temperature,test,15,gru_full,0.15067247015649654,7902
+사무실 밖,temperature,test,15,gru_full*0.25+persistence,0.08596192399509886,7902
+사무실 밖,temperature,test,15,gru_full*0.5+persistence,0.10226864345283093,7902
+사무실 밖,temperature,test,15,gru_full*0.75+persistence,0.12449904002288842,7902
+사무실 밖,temperature,test,15,gru_no_calendar,0.06674088637637537,7902
+사무실 밖,temperature,test,15,gru_no_calendar*0.25+persistence,0.07384098037771863,7902
+사무실 밖,temperature,test,15,gru_no_calendar*0.5+persistence,0.06960289039602162,7902
+사무실 밖,temperature,test,15,gru_no_calendar*0.75+persistence,0.06722701902300217,7902
+사무실 밖,temperature,test,30,persistence,0.1428473776004128,7902
+사무실 밖,temperature,test,30,gru_full,0.11361606209768703,7902
+사무실 밖,temperature,test,30,gru_full*0.25+persistence,0.12824326399096173,7902
+사무실 밖,temperature,test,30,gru_full*0.5+persistence,0.11772275314968286,7902
+사무실 밖,temperature,test,30,gru_full*0.75+persistence,0.1134452676205839,7902
+사무실 밖,temperature,test,30,gru_no_calendar,0.12387801194245289,7902
+사무실 밖,temperature,test,30,gru_no_calendar*0.25+persistence,0.1344221430589989,7902
+사무실 밖,temperature,test,30,gru_no_calendar*0.5+persistence,0.12831505881898225,7902
+사무실 밖,temperature,test,30,gru_no_calendar*0.75+persistence,0.12469922413074104,7902
+사무실 밖,temperature,test,60,persistence,0.2701282332257903,7902
+사무실 밖,temperature,test,60,gru_full,0.43189457632927497,7902
+사무실 밖,temperature,test,60,gru_full*0.25+persistence,0.2345479992606072,7902
+사무실 밖,temperature,test,60,gru_full*0.5+persistence,0.266236000258963,7902
+사무실 밖,temperature,test,60,gru_full*0.75+persistence,0.34289282697630785,7902
+사무실 밖,temperature,test,60,gru_no_calendar,0.2163865353239847,7902
+사무실 밖,temperature,test,60,gru_no_calendar*0.25+persistence,0.2504150129456787,7902
+사무실 밖,temperature,test,60,gru_no_calendar*0.5+persistence,0.23386782388148866,7902
+사무실 밖,temperature,test,60,gru_no_calendar*0.75+persistence,0.2216261481369818,7902
+실습실,co2,val,5,persistence,12.823609596097048,8052
+실습실,co2,val,5,gru_full,9.06710257153575,8052
+실습실,co2,val,5,gru_full*0.25+persistence,11.377843561186697,8052
+실습실,co2,val,5,gru_full*0.5+persistence,10.191048310872517,8052
+실습실,co2,val,5,gru_full*0.75+persistence,9.403377012772994,8052
+실습실,co2,val,5,gru_no_calendar,8.467242741667686,8052
+실습실,co2,val,5,gru_no_calendar*0.25+persistence,11.277667050804597,8052
+실습실,co2,val,5,gru_no_calendar*0.5+persistence,9.947083605383973,8052
+실습실,co2,val,5,gru_no_calendar*0.75+persistence,8.986921725436579,8052
+실습실,co2,val,15,persistence,34.025715926009745,8052
+실습실,co2,val,15,gru_full,19.48159628582427,8052
+실습실,co2,val,15,gru_full*0.25+persistence,28.260155705747117,8052
+실습실,co2,val,15,gru_full*0.5+persistence,23.505640055490144,8052
+실습실,co2,val,15,gru_full*0.75+persistence,20.33015115475453,8052
+실습실,co2,val,15,gru_no_calendar,18.315383077319204,8052
+실습실,co2,val,15,gru_no_calendar*0.25+persistence,28.10044710374388,8052
+실습실,co2,val,15,gru_no_calendar*0.5+persistence,23.025037758870322,8052
+실습실,co2,val,15,gru_no_calendar*0.75+persistence,19.51571439713669,8052
+실습실,co2,val,30,persistence,65.12355455378662,8052
+실습실,co2,val,30,gru_full,36.57503367394165,8052
+실습실,co2,val,30,gru_full*0.25+persistence,53.574774196831314,8052
+실습실,co2,val,30,gru_full*0.5+persistence,43.886235013034174,8052
+실습실,co2,val,30,gru_full*0.75+persistence,37.440824252837814,8052
+실습실,co2,val,30,gru_no_calendar,35.8205161627643,8052
+실습실,co2,val,30,gru_no_calendar*0.25+persistence,53.51267798812722,8052
+실습실,co2,val,30,gru_no_calendar*0.5+persistence,43.74824684245398,8052
+실습실,co2,val,30,gru_no_calendar*0.75+persistence,37.3145688725418,8052
+실습실,co2,val,60,persistence,122.04104980377788,8052
+실습실,co2,val,60,gru_full,72.94958159536256,8052
+실습실,co2,val,60,gru_full*0.25+persistence,100.6076775885789,8052
+실습실,co2,val,60,gru_full*0.5+persistence,82.33462176107378,8052
+실습실,co2,val,60,gru_full*0.75+persistence,71.36256186120023,8052
+실습실,co2,val,60,gru_no_calendar,73.02491870923713,8052
+실습실,co2,val,60,gru_no_calendar*0.25+persistence,101.21727609421208,8052
+실습실,co2,val,60,gru_no_calendar*0.5+persistence,83.42040580146892,8052
+실습실,co2,val,60,gru_no_calendar*0.75+persistence,72.49850139153638,8052
+실습실,co2,test,5,persistence,4.542446436745642,7902
+실습실,co2,test,5,gru_full,4.078900958278215,7902
+실습실,co2,test,5,gru_full*0.25+persistence,4.320105026233531,7902
+실습실,co2,test,5,gru_full*0.5+persistence,4.160308615825231,7902
+실습실,co2,test,5,gru_full*0.75+persistence,4.075153819098409,7902
+실습실,co2,test,5,gru_no_calendar,3.871403691497702,7902
+실습실,co2,test,5,gru_no_calendar*0.25+persistence,4.270719433096324,7902
+실습실,co2,test,5,gru_no_calendar*0.5+persistence,4.057521486970269,7902
+실습실,co2,test,5,gru_no_calendar*0.75+persistence,3.9219966899048253,7902
+실습실,co2,test,15,persistence,8.308007489636227,7902
+실습실,co2,test,15,gru_full,6.697263242141774,7902
+실습실,co2,test,15,gru_full*0.25+persistence,7.512826198808636,7902
+실습실,co2,test,15,gru_full*0.5+persistence,6.910553254649114,7902
+실습실,co2,test,15,gru_full*0.75+persistence,6.576976373508833,7902
+실습실,co2,test,15,gru_no_calendar,6.137704820760864,7902
+실습실,co2,test,15,gru_no_calendar*0.25+persistence,7.340382550161599,7902
+실습실,co2,test,15,gru_no_calendar*0.5+persistence,6.555384669476478,7902
+실습실,co2,test,15,gru_no_calendar*0.75+persistence,6.109720734577183,7902
+실습실,co2,test,30,persistence,13.929353019310776,7902
+실습실,co2,test,30,gru_full,11.381160870288722,7902
+실습실,co2,test,30,gru_full*0.25+persistence,12.392184533399439,7902
+실습실,co2,test,30,gru_full*0.5+persistence,11.208275331783463,7902
+실습실,co2,test,30,gru_full*0.75+persistence,10.733279935681828,7902
+실습실,co2,test,30,gru_no_calendar,10.430109737070866,7902
+실습실,co2,test,30,gru_no_calendar*0.25+persistence,12.309258008419608,7902
+실습실,co2,test,30,gru_no_calendar*0.5+persistence,10.969877155664086,7902
+실습실,co2,test,30,gru_no_calendar*0.75+persistence,10.279503102303758,7902
+실습실,co2,test,60,persistence,24.37772267620885,7902
+실습실,co2,test,60,gru_full,21.455360449286722,7902
+실습실,co2,test,60,gru_full*0.25+persistence,21.540752111583142,7902
+실습실,co2,test,60,gru_full*0.5+persistence,19.405332570617876,7902
+실습실,co2,test,60,gru_full*0.75+persistence,19.304963737763927,7902
+실습실,co2,test,60,gru_no_calendar,20.256392420771395,7902
+실습실,co2,test,60,gru_no_calendar*0.25+persistence,21.99268296554824,7902
+실습실,co2,test,60,gru_no_calendar*0.5+persistence,20.096592153183753,7902
+실습실,co2,test,60,gru_no_calendar*0.75+persistence,19.449984012450244,7902
+실습실,temperature,val,5,persistence,0.033535652473324636,8052
+실습실,temperature,val,5,gru_full,0.03030743743434097,8052
+실습실,temperature,val,5,gru_full*0.25+persistence,0.03210644016085841,8052
+실습실,temperature,val,5,gru_full*0.5+persistence,0.031058951745978412,8052
+실습실,temperature,val,5,gru_full*0.75+persistence,0.030447979856946843,8052
+실습실,temperature,val,5,gru_no_calendar,0.029785769766264156,8052
+실습실,temperature,val,5,gru_no_calendar*0.25+persistence,0.03185619416073431,8052
+실습실,temperature,val,5,gru_no_calendar*0.5+persistence,0.0306256298277429,8052
+실습실,temperature,val,5,gru_no_calendar*0.75+persistence,0.029883850822979337,8052
+실습실,temperature,val,15,persistence,0.07770879554085275,8052
+실습실,temperature,val,15,gru_full,0.06980105294437475,8052
+실습실,temperature,val,15,gru_full*0.25+persistence,0.07297935375691171,8052
+실습실,temperature,val,15,gru_full*0.5+persistence,0.06983603912387626,8052
+실습실,temperature,val,15,gru_full*0.75+persistence,0.06857589975376953,8052
+실습실,temperature,val,15,gru_no_calendar,0.06736508448563343,8052
+실습실,temperature,val,15,gru_no_calendar*0.25+persistence,0.07300875468806017,8052
+실습실,temperature,val,15,gru_no_calendar*0.5+persistence,0.06953137547473556,8052
+실습실,temperature,val,15,gru_no_calendar*0.75+persistence,0.06737320617366892,8052
+실습실,temperature,val,30,persistence,0.12739428606900302,8052
+실습실,temperature,val,30,gru_full,0.11469826861749641,8052
+실습실,temperature,val,30,gru_full*0.25+persistence,0.11811270206885378,8052
+실습실,temperature,val,30,gru_full*0.5+persistence,0.11235851490610106,8052
+실습실,temperature,val,30,gru_full*0.75+persistence,0.11074143070755346,8052
+실습실,temperature,val,30,gru_no_calendar,0.11152418300516856,8052
+실습실,temperature,val,30,gru_no_calendar*0.25+persistence,0.11839775812904217,8052
+실습실,temperature,val,30,gru_no_calendar*0.5+persistence,0.1126376175489582,8052
+실습실,temperature,val,30,gru_no_calendar*0.75+persistence,0.10981652402664617,8052
+실습실,temperature,val,60,persistence,0.21184950732379426,8052
+실습실,temperature,val,60,gru_full,0.19744752286028874,8052
+실습실,temperature,val,60,gru_full*0.25+persistence,0.19567817985508137,8052
+실습실,temperature,val,60,gru_full*0.5+persistence,0.18711753988289678,8052
+실습실,temperature,val,60,gru_full*0.75+persistence,0.18685148648225544,8052
+실습실,temperature,val,60,gru_no_calendar,0.20067112231455925,8052
+실습실,temperature,val,60,gru_no_calendar*0.25+persistence,0.19726216402210173,8052
+실습실,temperature,val,60,gru_no_calendar*0.5+persistence,0.18984039340277423,8052
+실습실,temperature,val,60,gru_no_calendar*0.75+persistence,0.19047922970818693,8052
+실습실,temperature,test,5,persistence,0.020390046152758374,7902
+실습실,temperature,test,5,gru_full,0.019024308257029346,7902
+실습실,temperature,test,5,gru_full*0.25+persistence,0.01922926978804256,7902
+실습실,temperature,test,5,gru_full*0.5+persistence,0.01856794842464415,7902
+실습실,temperature,test,5,gru_full*0.75+persistence,0.018516275617811415,7902
+실습실,temperature,test,5,gru_no_calendar,0.01816234694828235,7902
+실습실,temperature,test,5,gru_no_calendar*0.25+persistence,0.019294406757629903,7902
+실습실,temperature,test,5,gru_no_calendar*0.5+persistence,0.018498804260887274,7902
+실습실,temperature,test,5,gru_no_calendar*0.75+persistence,0.018120929097199978,7902
+실습실,temperature,test,15,persistence,0.043391468614845205,7902
+실습실,temperature,test,15,gru_full,0.033610715651264736,7902
+실습실,temperature,test,15,gru_full*0.25+persistence,0.03829037367739396,7902
+실습실,temperature,test,15,gru_full*0.5+persistence,0.03451926965889705,7902
+실습실,temperature,test,15,gru_full*0.75+persistence,0.032802210793076395,7902
+실습실,temperature,test,15,gru_no_calendar,0.03377093245367013,7902
+실습실,temperature,test,15,gru_no_calendar*0.25+persistence,0.03893851268385006,7902
+실습실,temperature,test,15,gru_no_calendar*0.5+persistence,0.03555009745851525,7902
+실습실,temperature,test,15,gru_no_calendar*0.75+persistence,0.03369307777483956,7902
+실습실,temperature,test,30,persistence,0.07422928772706437,7902
+실습실,temperature,test,30,gru_full,0.05093370103075727,7902
+실습실,temperature,test,30,gru_full*0.25+persistence,0.06232130337413188,7902
+실습실,temperature,test,30,gru_full*0.5+persistence,0.053149077054127296,7902
+실습실,temperature,test,30,gru_full*0.75+persistence,0.04872959518818818,7902
+실습실,temperature,test,30,gru_no_calendar,0.054384556700084456,7902
+실습실,temperature,test,30,gru_no_calendar*0.25+persistence,0.06452802331258725,7902
+실습실,temperature,test,30,gru_no_calendar*0.5+persistence,0.057206815721052746,7902
+실습실,temperature,test,30,gru_no_calendar*0.75+persistence,0.05340467613276214,7902
+실습실,temperature,test,60,persistence,0.1327142710626593,7902
+실습실,temperature,test,60,gru_full,0.0816023681049738,7902
+실습실,temperature,test,60,gru_full*0.25+persistence,0.10841281695837794,7902
+실습실,temperature,test,60,gru_full*0.5+persistence,0.08884994170841341,7902
+실습실,temperature,test,60,gru_full*0.75+persistence,0.07842428428980104,7902
+실습실,temperature,test,60,gru_no_calendar,0.09111514293040182,7902
+실습실,temperature,test,60,gru_no_calendar*0.25+persistence,0.11282087301670886,7902
+실습실,temperature,test,60,gru_no_calendar*0.5+persistence,0.09738378336507439,7902
+실습실,temperature,test,60,gru_no_calendar*0.75+persistence,0.08928895147502709,7902
+회의실,co2,val,5,persistence,23.464092566972706,7951
+회의실,co2,val,5,gru_full,24.360929665453344,7951
+회의실,co2,val,5,gru_full*0.25+persistence,23.63111349304222,7951
+회의실,co2,val,5,gru_full*0.5+persistence,23.830985972092986,7951
+회의실,co2,val,5,gru_full*0.75+persistence,24.076093708010024,7951
+회의실,co2,val,5,gru_no_calendar,24.426730799204208,7951
+회의실,co2,val,5,gru_no_calendar*0.25+persistence,23.624112220968545,7951
+회의실,co2,val,5,gru_no_calendar*0.5+persistence,23.83197150448106,7951
+회의실,co2,val,5,gru_no_calendar*0.75+persistence,24.09018209364081,7951
+회의실,co2,val,15,persistence,61.80748753289189,7951
+회의실,co2,val,15,gru_full,52.32641941243756,7951
+회의실,co2,val,15,gru_full*0.25+persistence,57.418172970401045,7951
+회의실,co2,val,15,gru_full*0.5+persistence,54.14247398102992,7951
+회의실,co2,val,15,gru_full*0.75+persistence,52.37042525153147,7951
+회의실,co2,val,15,gru_no_calendar,50.4192271059286,7951
+회의실,co2,val,15,gru_no_calendar*0.25+persistence,56.95056270944324,7951
+회의실,co2,val,15,gru_no_calendar*0.5+persistence,53.1954816382361,7951
+회의실,co2,val,15,gru_no_calendar*0.75+persistence,50.89345530674392,7951
+회의실,co2,val,30,persistence,101.95342300601192,7951
+회의실,co2,val,30,gru_full,84.99562273684005,7951
+회의실,co2,val,30,gru_full*0.25+persistence,94.00570763631251,7951
+회의실,co2,val,30,gru_full*0.5+persistence,88.03268848486837,7951
+회의실,co2,val,30,gru_full*0.75+persistence,84.61047602593412,7951
+회의실,co2,val,30,gru_no_calendar,82.6243797458653,7951
+회의실,co2,val,30,gru_no_calendar*0.25+persistence,93.05577734523922,7951
+회의실,co2,val,30,gru_no_calendar*0.5+persistence,86.17735522163093,7951
+회의실,co2,val,30,gru_no_calendar*0.75+persistence,82.22639795417771,7951
+회의실,co2,val,60,persistence,160.83515701610597,7951
+회의실,co2,val,60,gru_full,128.14045710918094,7951
+회의실,co2,val,60,gru_full*0.25+persistence,145.66268713827208,7951
+회의실,co2,val,60,gru_full*0.5+persistence,134.43337890640353,7951
+회의실,co2,val,60,gru_full*0.75+persistence,127.81038901533304,7951
+회의실,co2,val,60,gru_no_calendar,136.0228130200002,7951
+회의실,co2,val,60,gru_no_calendar*0.25+persistence,147.91148899900224,7951
+회의실,co2,val,60,gru_no_calendar*0.5+persistence,138.63714972491115,7951
+회의실,co2,val,60,gru_no_calendar*0.75+persistence,133.68102742356933,7951
+회의실,co2,test,5,persistence,10.104134694755535,7820
+회의실,co2,test,5,gru_full,10.801656187403843,7820
+회의실,co2,test,5,gru_full*0.25+persistence,10.254272214104148,7820
+회의실,co2,test,5,gru_full*0.5+persistence,10.419643550394746,7820
+회의실,co2,test,5,gru_full*0.75+persistence,10.603883728651745,7820
+회의실,co2,test,5,gru_no_calendar,10.672947080178028,7820
+회의실,co2,test,5,gru_no_calendar*0.25+persistence,10.218155248695627,7820
+회의실,co2,test,5,gru_no_calendar*0.5+persistence,10.353077459701186,7820
+회의실,co2,test,5,gru_no_calendar*0.75+persistence,10.504542377598755,7820
+회의실,co2,test,15,persistence,23.877919853190935,7820
+회의실,co2,test,15,gru_full,21.707772109087777,7820
+회의실,co2,test,15,gru_full*0.25+persistence,22.802089515549447,7820
+회의실,co2,test,15,gru_full*0.5+persistence,22.048494948755444,7820
+회의실,co2,test,15,gru_full*0.75+persistence,21.675995524764975,7820
+회의실,co2,test,15,gru_no_calendar,20.63072091026989,7820
+회의실,co2,test,15,gru_no_calendar*0.25+persistence,22.545771886137747,7820
+회의실,co2,test,15,gru_no_calendar*0.5+persistence,21.524566835759547,7820
+회의실,co2,test,15,gru_no_calendar*0.75+persistence,20.877006561981748,7820
+회의실,co2,test,30,persistence,35.164109119307966,7820
+회의실,co2,test,30,gru_full,29.61822148393792,7820
+회의실,co2,test,30,gru_full*0.25+persistence,32.718828112511986,7820
+회의실,co2,test,30,gru_full*0.5+persistence,30.887318385287625,7820
+회의실,co2,test,30,gru_full*0.75+persistence,29.77346923906175,7820
+회의실,co2,test,30,gru_no_calendar,29.280244387263227,7820
+회의실,co2,test,30,gru_no_calendar*0.25+persistence,32.72566507832168,7820
+회의실,co2,test,30,gru_no_calendar*0.5+persistence,30.87945023948884,7820
+회의실,co2,test,30,gru_no_calendar*0.75+persistence,29.63434831858291,7820
+회의실,co2,test,60,persistence,55.56913895472846,7820
+회의실,co2,test,60,gru_full,43.714796611659054,7820
+회의실,co2,test,60,gru_full*0.25+persistence,49.93317529917373,7820
+회의실,co2,test,60,gru_full*0.5+persistence,45.772144091281746,7820
+회의실,co2,test,60,gru_full*0.75+persistence,43.59688643433554,7820
+회의실,co2,test,60,gru_no_calendar,46.14834226330223,7820
+회의실,co2,test,60,gru_no_calendar*0.25+persistence,51.16929453583934,7820
+회의실,co2,test,60,gru_no_calendar*0.5+persistence,48.062903261306644,7820
+회의실,co2,test,60,gru_no_calendar*0.75+persistence,46.39877869198694,7820
+회의실,temperature,val,5,persistence,0.046157715770676816,7951
+회의실,temperature,val,5,gru_full,0.054023103134659994,7951
+회의실,temperature,val,5,gru_full*0.25+persistence,0.04811375306966304,7951
+회의실,temperature,val,5,gru_full*0.5+persistence,0.050069790368649274,7951
+회의실,temperature,val,5,gru_full*0.75+persistence,0.052035786493546315,7951
+회의실,temperature,val,5,gru_no_calendar,0.05465496136638117,7951
+회의실,temperature,val,5,gru_no_calendar*0.25+persistence,0.04823303858359165,7951
+회의실,temperature,val,5,gru_no_calendar*0.5+persistence,0.050310621140453295,7951
+회의실,temperature,val,5,gru_no_calendar*0.75+persistence,0.052438210307569746,7951
+회의실,temperature,val,15,persistence,0.12177504456848368,7951
+회의실,temperature,val,15,gru_full,0.12292139492099682,7951
+회의실,temperature,val,15,gru_full*0.25+persistence,0.12126066927309531,7951
+회의실,temperature,val,15,gru_full*0.5+persistence,0.12098231559698723,7951
+회의실,temperature,val,15,gru_full*0.75+persistence,0.12140640734486753,7951
+회의실,temperature,val,15,gru_no_calendar,0.11971669802199728,7951
+회의실,temperature,val,15,gru_no_calendar*0.25+persistence,0.11951939730715593,7951
+회의실,temperature,val,15,gru_no_calendar*0.5+persistence,0.1179900480627099,7951
+회의실,temperature,val,15,gru_no_calendar*0.75+persistence,0.11794712834051758,7951
+회의실,temperature,val,30,persistence,0.2043893843113349,7951
+회의실,temperature,val,30,gru_full,0.20129956564593204,7951
+회의실,temperature,val,30,gru_full*0.25+persistence,0.20143925878270258,7951
+회의실,temperature,val,30,gru_full*0.5+persistence,0.19940312531530865,7951
+회의실,temperature,val,30,gru_full*0.75+persistence,0.19916642079517055,7951
+회의실,temperature,val,30,gru_no_calendar,0.20551639778061404,7951
+회의실,temperature,val,30,gru_no_calendar*0.25+persistence,0.2010338473448947,7951
+회의실,temperature,val,30,gru_no_calendar*0.5+persistence,0.19946669788574095,7951
+회의실,temperature,val,30,gru_no_calendar*0.75+persistence,0.20091908215846735,7951
+회의실,temperature,val,60,persistence,0.3311491356812368,7951
+회의실,temperature,val,60,gru_full,0.3278148602185917,7951
+회의실,temperature,val,60,gru_full*0.25+persistence,0.3243185274706833,7951
+회의실,temperature,val,60,gru_full*0.5+persistence,0.3208380364394161,7951
+회의실,temperature,val,60,gru_full*0.75+persistence,0.32184860574690866,7951
+회의실,temperature,val,60,gru_no_calendar,0.33505486224585546,7951
+회의실,temperature,val,60,gru_no_calendar*0.25+persistence,0.3249164157177034,7951
+회의실,temperature,val,60,gru_no_calendar*0.5+persistence,0.32266589066259904,7951
+회의실,temperature,val,60,gru_no_calendar*0.75+persistence,0.32649795707104834,7951
+회의실,temperature,test,5,persistence,0.016300083121375354,7820
+회의실,temperature,test,5,gru_full,0.022376338295314623,7820
+회의실,temperature,test,5,gru_full*0.25+persistence,0.017816985659587108,7820
+회의실,temperature,test,5,gru_full*0.5+persistence,0.019333888197798865,7820
+회의실,temperature,test,5,gru_full*0.75+persistence,0.02085089305477679,7820
+회의실,temperature,test,5,gru_no_calendar,0.022198861944096166,7820
+회의실,temperature,test,5,gru_no_calendar*0.25+persistence,0.017774777827055558,7820
+회의실,temperature,test,5,gru_no_calendar*0.5+persistence,0.019249472532735762,7820
+회의실,temperature,test,5,gru_no_calendar*0.75+persistence,0.020724170957989705,7820
+회의실,temperature,test,15,persistence,0.0442242083342179,7820
+회의실,temperature,test,15,gru_full,0.05180938506065427,7820
+회의실,temperature,test,15,gru_full*0.25+persistence,0.04566596060457742,7820
+회의실,temperature,test,15,gru_full*0.5+persistence,0.047185384891831966,7820
+회의실,temperature,test,15,gru_full*0.75+persistence,0.04908239201206685,7820
+회의실,temperature,test,15,gru_no_calendar,0.046974561891287486,7820
+회의실,temperature,test,15,gru_no_calendar*0.25+persistence,0.044818974090049334,7820
+회의실,temperature,test,15,gru_no_calendar*0.5+persistence,0.04541448180937706,7820
+회의실,temperature,test,15,gru_no_calendar*0.75+persistence,0.046086601223177315,7820
+회의실,temperature,test,30,persistence,0.08005541072172277,7820
+회의실,temperature,test,30,gru_full,0.07619748298469407,7820
+회의실,temperature,test,30,gru_full*0.25+persistence,0.07676032668794208,7820
+회의실,temperature,test,30,gru_full*0.5+persistence,0.07420554929377172,7820
+회의실,temperature,test,30,gru_full*0.75+persistence,0.07397982397347765,7820
+회의실,temperature,test,30,gru_no_calendar,0.07815035798055742,7820
+회의실,temperature,test,30,gru_no_calendar*0.25+persistence,0.07860337663489535,7820
+회의실,temperature,test,30,gru_no_calendar*0.5+persistence,0.0772302667808045,7820
+회의실,temperature,test,30,gru_no_calendar*0.75+persistence,0.07672257155103757,7820
+회의실,temperature,test,60,persistence,0.1466751818156913,7820
+회의실,temperature,test,60,gru_full,0.1222551175090663,7820
+회의실,temperature,test,60,gru_full*0.25+persistence,0.13231931068098454,7820
+회의실,temperature,test,60,gru_full*0.5+persistence,0.12173350802467912,7820
+회의실,temperature,test,60,gru_full*0.75+persistence,0.11859735747432465,7820
+회의실,temperature,test,60,gru_no_calendar,0.12571343473156396,7820
+회의실,temperature,test,60,gru_no_calendar*0.25+persistence,0.13676142320608545,7820
+회의실,temperature,test,60,gru_no_calendar*0.5+persistence,0.12744873600542697,7820
+회의실,temperature,test,60,gru_no_calendar*0.75+persistence,0.1224807261201122,7820
