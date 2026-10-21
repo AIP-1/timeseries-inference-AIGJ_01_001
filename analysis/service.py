@@ -143,6 +143,7 @@ class Engine:
         self.ae_locs = ae["locations"]
         self.ae = None
         self.ae_state = ae["state_dict"]
+        self.gap_until: dict = {}           # 공간별: 끊김이 끝나고 오토인코더 창(1시간)이 다시 찰 때까지 이상 판정을 멈춘다
         thr = pd.read_csv(reports / "task4" / "thresholds.csv", index_col=[0, 1]).iloc[:, 0]
         self.ae_thr = {k: float(v) for k, v in thr.items()}
         vp = reports / "task5" / "vent.pt"
@@ -240,7 +241,11 @@ class Engine:
             # 이상
             scores = {f: _f(ae_sc[(loc, f)].iloc[-1] / self.ae_thr[(loc, f)]) for f in fields
                       if (loc, f) in ae_sc and (loc, f) in self.ae_thr and pd.notna(ae_sc[(loc, f)].iloc[-1])}
-            rule_hits = sorted({f"{k[2]}:{k[1]}" for k, v in rules.items() if k[0] == loc and bool(v.iloc[-1])})
+            # 끊긴 동안과 그 뒤 1시간(창 12칸)은 창 안에 빈 칸·메운 값이 섞여 복원 오차가 커진다 → 이상 판정을 멈추고 data_gap 만 알린다
+            if stale:
+                self.gap_until[loc] = now + STEP * task4.W
+            paused = stale or now < self.gap_until.get(loc, now)
+            rule_hits = [] if stale else sorted({f"{k[2]}:{k[1]}" for k, v in rules.items() if k[0] == loc and bool(v.iloc[-1])})
             rr = recent[recent["location"] == loc]
             oor = [f for f in fields if len(rr[rr["field"] == f]) and
                    ((rr.loc[rr["field"] == f, "value"] < prep.RULES[f][0]) | (rr.loc[rr["field"] == f, "value"] > prep.RULES[f][1])).any()]
@@ -248,9 +253,10 @@ class Engine:
                 rule_hits.append("data_gap")
             rule_hits += [f"out_of_range:{f}" for f in oor]
             worst = max(scores, key=scores.get) if scores else None
-            r["anomaly"] = {"score": scores.get(worst) if worst else None, "is_anomaly": bool(worst and scores[worst] > 1.0),
-                            "cause_field": worst if worst and scores[worst] > 1.0 else None, "field_scores": scores,
-                            "rules": rule_hits}
+            hit = bool(worst and scores[worst] > 1.0 and not paused)
+            r["anomaly"] = {"score": scores.get(worst) if worst else None, "is_anomaly": hit,
+                            "cause_field": worst if hit else None, "field_scores": scores,
+                            "paused": paused, "rules": rule_hits}
             # 상태
             st: dict = {}
             if "co2" in fields and not stale:

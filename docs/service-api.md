@@ -48,6 +48,7 @@ API 경로에는 키와 한글 이름 둘 다 쓸 수 있다.
    "is_anomaly": false,
    "cause_field": null,           // 이상이면 가장 큰 항목(co2|temperature|humidity)
    "field_scores": {"co2": 0.42, "temperature": 0.10, "humidity": 0.21},
+   "paused": false,               // 데이터가 끊긴 동안과 다시 들어온 뒤 1시간은 true: 창에 빈 칸이 섞여 이상 판정을 멈춘다(is_anomaly=false)
    "rules": []                    // 규칙 경보: "data_gap", "stuck:co2", "spike:temperature", "night:co2"(새벽 기준선), "rise:co2"(평소보다 크게 오름: 환기 정지 의심), "out_of_range:co2"
  },
  "state": {                       // CO₂ 센서가 있는 공간만
@@ -77,6 +78,6 @@ API 경로에는 키와 한글 이름 둘 다 쓸 수 있다.
 ## 장애 대응
 
 - 계산이 한 번 실패해도 기록만 남기고 다음 분에 처음부터 다시 한다(`/status` 의 `errors`, `last_error`).
-- 일부 공간 데이터가 끊기면 그 공간만 `forecast: null` + `data_gap` 경보, 나머지는 정상 계산.
+- 일부 공간 데이터가 끊기면 그 공간만 `forecast: null` + `data_gap` 경보, 나머지는 정상 계산. 그 공간의 이상 판정은 끊긴 동안과 복구 뒤 1시간 멈춘다(`anomaly.paused`). 2026-10-21 장애 시험에서 끊김이 섞인 창 때문에 실습실 온도 헛경보가 난 것을 보고 넣었다.
 - 보드 재부팅: Docker `restart: unless-stopped` 로 자동 시작. 헬스체크가 `/healthz` 를 1분마다 확인.
 - 주기 기록: `data/service/cycles-YYYYMMDD.jsonl` → `python -m analysis.service_report` 로 요약.
