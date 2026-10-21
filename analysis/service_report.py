@@ -1,6 +1,6 @@
 """과제 8: 상시 서비스 가동 기록 요약 (data/service/cycles-*.jsonl).
 
-  python -m analysis.service_report [--since 2026-10-21T00:00Z] [--out data/reports/task8]
+  python -m analysis.service_report [--since 2026-10-21T00:00Z] [--exclude 2026-10-20T07:46Z/2026-10-20T07:50Z] [--out data/reports/task8]
 
 - 가동 시간, 주기 수, 빠진 주기(2분 넘게 기록이 없던 구간), 실패 주기
 - 주기별 처리 시간(평균·p95·최대)
@@ -21,6 +21,8 @@ def main():
     d = os.environ.get("DATA_DIR", "data")
     ap.add_argument("--logs", default=os.path.join(d, "service"))
     ap.add_argument("--since")
+    ap.add_argument("--exclude", action="append", default=[], metavar="START/END",
+                    help="빼고 셀 구간(UTC). 예: 같은 기록 파일에 시험 실행이 섞인 구간. 여러 번 줄 수 있음")
     ap.add_argument("--out", default=os.path.join(d, "reports", "task8"))
     a = ap.parse_args()
     rows = [json.loads(line) for f in sorted(Path(a.logs).glob("cycles-*.jsonl")) for line in open(f, encoding="utf-8") if line.strip()]
@@ -28,10 +30,18 @@ def main():
     df["time"] = pd.to_datetime(df["time"], utc=True)
     if a.since:
         df = df[df["time"] >= pd.Timestamp(a.since)]
+    excluded = []
+    for w in a.exclude:
+        s0, s1 = (pd.Timestamp(x) for x in w.split("/"))
+        m = (df["time"] >= s0) & (df["time"] <= s1)
+        excluded.append((s0, s1, int(m.sum())))
+        df = df[~m]
     df = df.sort_values("time")
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     gaps = df["time"].diff()
+    for s0, s1, _ in excluded:                      # 뺀 구간 자체는 '빈 구간'으로 세지 않는다
+        gaps[(df["time"] > s1) & (df["time"] - gaps <= s0)] = pd.NaT
     holes = df.loc[gaps > pd.Timedelta("2min"), "time"]
     span = df["time"].iloc[-1] - df["time"].iloc[0]
     ok = df[df["ok"] == True]  # noqa: E712
@@ -40,6 +50,8 @@ def main():
     L.append(f"- 기간 {df['time'].iloc[0]:%Y-%m-%d %H:%M} ~ {df['time'].iloc[-1]:%Y-%m-%d %H:%M} UTC ({span.total_seconds() / 3600:.1f}시간)")
     L.append(f"- 주기 {len(df)}회, 성공 {len(ok)}회, 실패 {len(df) - len(ok)}회, 2분 넘게 빈 구간 {len(holes)}회"
              + (f" (최대 {gaps.max().total_seconds() / 60:.1f}분)" if len(holes) else ""))
+    for s0, s1, n in excluded:
+        L.append(f"- 뺀 구간: {s0:%m-%d %H:%M} ~ {s1:%m-%d %H:%M} UTC ({n}줄)")
     if len(ok):
         t = ok["total_s"]
         L.append(f"- 주기 처리 시간: 평균 {t.mean():.2f}초, p95 {t.quantile(0.95):.2f}초, 최대 {t.max():.2f}초 "
@@ -55,9 +67,14 @@ def main():
         L.append("| space | alert | raised |")
         L.append("|---|---|---|")
         L += [f"| {r.space} | {r.alert} | {r.raised} |" for r in cnt.itertuples()]
-        gap = ev[ev.alert == "data_gap"].sort_values("time")
-        if len(gap):
-            L.append("\n### 데이터 끊김 경보 (수집기 정지 시험)\n")
+        gap = ev[(ev.alert == "data_gap") & (ev.status != "ongoing")].sort_values("time")
+        # 한 번도 해제되지 않은 공간(처음부터 값이 없는 센서)은 시험과 무관하므로 한 줄로 따로 적는다
+        never = sorted(set(gap.space) - set(gap[gap.status == "cleared"].space))
+        gap = gap[~gap.space.isin(never)]
+        if len(gap) or never:
+            L.append("\n### 데이터 끊김 경보 (켜짐·꺼짐)\n")
+            if never:
+                L.append(f"- 기간 내내 끊김(해제 없음): {', '.join(never)}")
             L += [f"- {r.time.tz_convert('Asia/Seoul'):%m-%d %H:%M} KST {r.space} {r.status}" for r in gap.itertuples()]
         ev.to_csv(out / "alerts.csv", index=False)
     else:

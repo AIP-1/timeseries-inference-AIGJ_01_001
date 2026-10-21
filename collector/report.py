@@ -43,20 +43,25 @@ from(bucket: "{bucket}")
 
     total = int(a.hours * 60)
     print(f"# 수집 현황 ({start:%Y-%m-%d %H:%M} ~ {end:%Y-%m-%d %H:%M} UTC, {a.hours:g}시간)\n")
-    print("| 공간 | 항목 | 데이터 있는 분 | 커버율 | 마지막 수신(UTC) |")
-    print("|---|---|---:|---:|---|")
+    print("| 공간 | 항목 | 보고 주기 | 받은 횟수/기대 횟수 | 커버율 | 마지막 수신(UTC) |")
+    print("|---|---|---:|---:|---:|---|")
     gaps_out = []
     for (space, field), mins in sorted(minutes.items()):
         ordered = sorted(mins)
-        pct = 100 * len(mins) / total
-        print(f"| {space} | {field} | {len(mins)}/{total} | {pct:.1f}% | {ordered[-1]:%m-%d %H:%M} |")
+        # 센서마다 보내는 주기가 다르다(1·2·10분). 커버율은 '그 주기로 왔어야 할 횟수' 대비로,
+        # 빠진 구간은 '평소 간격 + min_gap' 이상 빈 곳만 센다(10분 센서의 평소 9분 빈칸은 결측이 아님).
+        diffs = sorted(int((b - c).total_seconds() // 60) for c, b in zip(ordered, ordered[1:]))
+        every = max(1, diffs[len(diffs) // 2]) if diffs else 1
+        expected = max(1, total // every)
+        pct = min(100.0, 100 * len(mins) / expected)
+        print(f"| {space} | {field} | {every}분 | {len(mins)}/{expected} | {pct:.1f}% | {ordered[-1]:%m-%d %H:%M} |")
         prev = start - timedelta(minutes=1)
         for t in ordered + [end]:
             gap = int((t - prev).total_seconds() // 60) - 1
-            if gap >= a.min_gap:
+            if gap >= every - 1 + a.min_gap:
                 gaps_out.append((space, field, prev + timedelta(minutes=1), t, gap))
             prev = t
-    print(f"\n## {a.min_gap}분 이상 빠진 구간\n")
+    print(f"\n## 평소 간격보다 {a.min_gap}분 이상 더 빈 구간\n")
     if not gaps_out:
         print("없음")
     else:
