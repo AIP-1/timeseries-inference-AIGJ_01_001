@@ -1,0 +1,123 @@
+{
+ "latency": [
+  {
+   "model": "gru",
+   "backend": "tensorrt_fp16",
+   "batch": 1,
+   "mean_ms": 0.753987315,
+   "p95_ms": 0.835938,
+   "max_ms": 1.54224,
+   "compute_mean_ms": 0.73190896,
+   "build_s": 19.0,
+   "power_mw": 7827.8,
+   "gpu_load_%": 60.9,
+   "mem_avail_min_mb": 4389,
+   "engine_mb": 0.5
+  },
+  {
+   "model": "gru",
+   "backend": "tensorrt_fp16",
+   "batch": 4,
+   "mean_ms": 0.732572022,
+   "p95_ms": 0.761475,
+   "max_ms": 0.791016,
+   "compute_mean_ms": 0.71172814,
+   "build_s": 19.0,
+   "power_mw": 7554.3,
+   "gpu_load_%": 64.2,
+   "mem_avail_min_mb": 4431,
+   "engine_mb": 0.5
+  },
+  {
+   "model": "ae",
+   "backend": "tensorrt_fp16",
+   "batch": 1,
+   "mean_ms": 0.065926879,
+   "p95_ms": 0.0722656,
+   "max_ms": 0.163452,
+   "compute_mean_ms": 0.052466916599999996,
+   "build_s": 11.2,
+   "power_mw": 7161.8,
+   "gpu_load_%": 38.7,
+   "mem_avail_min_mb": 4430,
+   "engine_mb": 0.1
+  },
+  {
+   "model": "ae",
+   "backend": "tensorrt_fp16",
+   "batch": 4,
+   "mean_ms": 0.0671577127,
+   "p95_ms": 0.0794678,
+   "max_ms": 0.122559,
+   "compute_mean_ms": 0.0527327854,
+   "build_s": 11.2,
+   "power_mw": 7689.4,
+   "gpu_load_%": 38.4,
+   "mem_avail_min_mb": 4398,
+   "engine_mb": 0.1
+  },
+  {
+   "model": "vent",
+   "backend": "tensorrt_fp16",
+   "batch": 1,
+   "mean_ms": 0.0640559085,
+   "p95_ms": 0.0690918,
+   "max_ms": 0.0910645,
+   "compute_mean_ms": 0.0494123528,
+   "build_s": 10.4,
+   "power_mw": 7734.8,
+   "gpu_load_%": 32.4,
+   "mem_avail_min_mb": 4399,
+   "engine_mb": 0.07
+  },
+  {
+   "model": "vent",
+   "backend": "tensorrt_fp16",
+   "batch": 4,
+   "mean_ms": 0.0653742666,
+   "p95_ms": 0.0722656,
+   "max_ms": 0.106445,
+   "compute_mean_ms": 0.0503593729,
+   "build_s": 10.4,
+   "power_mw": 7142.5,
+   "gpu_load_%": 32.2,
+   "mem_avail_min_mb": 4436,
+   "engine_mb": 0.07
+  }
+ ],
+ "diff": [
+  {
+   "model": "gru",
+   "backend": "tensorrt_fp16",
+   "co2_max_ppm": 0.4620520348694861,
+   "co2_mean_ppm": 0.028125310986685855,
+   "temp_max_c": 0.0028668067738660667
+  },
+  {
+   "model": "ae",
+   "backend": "tensorrt_fp16",
+   "max_abs_norm": 0.0010026266479492563,
+   "flip_%": 0.0
+  },
+  {
+   "model": "vent",
+   "backend": "tensorrt_fp16",
+   "prob_max_diff": 0.0006385069360146378,
+   "flip_%": 0.0
+  }
+ ],
+ "conditions": {
+  "보드": "NVIDIA Jetson Orin Nano Engineering Reference Developer Kit Super",
+  "L4T": "# R39 (release), REVISION: 2.1, GCID: 46758480, BOARD: generic, EABI: aarch64, DATE: Fri Aug  7 05:54:22 AM UTC 2026",
+  "TensorRT": "&&&& RUNNING TensorRT.trtexec [TensorRT v101602] [b10] # /usr/bin/trtexec --help",
+  "전력 모드": "NV Power Mode: MAXN_SUPER 2",
+  "클럭 고정": "안 함(jetson_clocks 는 sudo 필요). 기본 DVFS 상태에서 측정",
+  "반복": "trtexec 워밍업 2000ms, 1000회, spin wait. 지연=latencyMs(입출력 복사 포함), compute=GPU 계산만",
+  "대기 전력(VDD_IN, mW)": 6798.9,
+  "전력 레일": [
+   "VDD_IN",
+   "VDD_CPU_GPU_CV",
+   "VDD_SOC"
+  ]
+ }
+}

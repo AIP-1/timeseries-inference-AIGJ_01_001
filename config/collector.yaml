@@ -1,0 +1,88 @@
+# 수집기 설정. 메시지 형식이 바뀌거나 센서가 늘면 이 파일만 고친다.
+#
+# 경로 문법
+#   a.b.c        중첩 키
+#   a[*].b       배열의 모든 원소에서 b (agg 로 하나로 줄인다: min | max | first)
+#   $topic[N]    토픽을 / 로 나눈 N번째 조각 (0부터)
+#   @key         explode 로 펼친 항목의 키 이름
+
+mqtt:
+  client_id: jetson-aigj-01-001-collector
+  qos: 1
+  keepalive: 30
+
+# 센서 시각과 수신 시각이 이보다 많이 차이 나면 센서 시각을 버리고 수신 시각을 쓴다(초).
+max_clock_skew_s: 600
+
+# 공간 이름 정규화. 메시지의 위치 이름(location 태그, 냉난방 장치 이름) → 공간 ID.
+# 목록에 없는 이름은 그대로 공간 ID 로 쓰고 /status 의 unmapped 에 표시한다.
+spaces:
+  by_name:
+    실습실: lab
+    사무실: office
+    사무실 밖: office_hall
+    회의실: meeting
+    창고: storage
+    집중회의실: focus_meeting
+    대표실-실내기: ceo_room
+    대표실-실외기: ceo_room
+    개발실-실내기: dev_room
+    개발실-실외기: dev_room
+  # 특정 장비만 다른 공간으로 보낼 때 (devEui 또는 장치 ID → 공간 ID)
+  by_device: {}
+
+sources:
+  # LoRaWAN 환경 센서 (ChirpStack v4 업링크)
+  - name: chirpstack
+    topic: application/+/device/+/event/up
+    measurement: env
+    dedup_key: deduplicationId
+    # 위에서부터 차례로 시도. 게이트웨이 시계가 틀린 경우가 있어 서버 수신 시각(nsTime)을 먼저 쓴다.
+    time:
+      - { path: "rxInfo[*].nsTime", agg: min }
+      - { path: time }
+    space_from: deviceInfo.tags.location
+    tags:
+      device: deviceInfo.devEui
+      model: deviceInfo.deviceProfileName
+      spot: deviceInfo.tags.spot
+    # object 아래 숫자·참거짓 값을 모두 필드로 저장
+    fields_from: object
+    extra_fields:
+      fcnt: fCnt
+      rssi: { path: "rxInfo[*].rssi", agg: max }
+      snr: { path: "rxInfo[*].snr", agg: max }
+
+  # 냉난방 실내기·실외기 상태
+  - name: xflow_hvac
+    topic: xflow/hvacr/+/+/status
+    measurement: hvac
+    time:
+      - { path: ts, unit: ms }
+    explode: values
+    space_from: "@key"
+    tags:
+      device: $topic[3]
+      unit: $topic[2]
+      name: "@key"
+    fields_from: "."
+
+  # 냉난방 컨트롤러
+  - name: xflow_controller
+    topic: xflow/controller/+/status
+    measurement: hvac_controller
+    time:
+      - { path: ts, unit: ms }
+    explode: values
+    tags:
+      device: $topic[2]
+      name: "@key"
+    fields_from: "."
+
+  # 게이트웨이 접속 상태 (본문 형식과 상관없이 수신 사실만 기록)
+  - name: gateway
+    topic: gateway/+/state/conn
+    measurement: gateway
+    payload: raw
+    tags:
+      gateway: $topic[1]

@@ -1,0 +1,153 @@
+location,field,horizon_min,model,mae,n
+사무실,co2,5,persistence,8.693255424499512,7902
+사무실,co2,5,mean_1h,21.741936415486684,7902
+사무실,co2,5,yesterday,125.8897933959961,7902
+사무실,co2,15,persistence,14.682194709777832,7902
+사무실,co2,15,mean_1h,27.088234482641855,7902
+사무실,co2,15,yesterday,125.8941421508789,7902
+사무실,co2,30,persistence,22.561376571655273,7902
+사무실,co2,30,mean_1h,34.738573692101,7902
+사무실,co2,30,yesterday,125.89887237548828,7902
+사무실,co2,60,persistence,37.583255767822266,7902
+사무실,co2,60,mean_1h,49.45196413030345,7902
+사무실,co2,60,yesterday,125.94481658935547,7902
+사무실,temperature,5,persistence,0.011972936801612377,7902
+사무실,temperature,5,mean_1h,0.03892418540279384,7902
+사무실,temperature,5,yesterday,0.40453025698661804,7902
+사무실,temperature,15,persistence,0.022398779168725014,7902
+사무실,temperature,15,mean_1h,0.04942648635879707,7902
+사무실,temperature,15,yesterday,0.4046112298965454,7902
+사무실,temperature,30,persistence,0.03831183537840843,7902
+사무실,temperature,30,mean_1h,0.06492130217105241,7902
+사무실,temperature,30,yesterday,0.40473276376724243,7902
+사무실,temperature,60,persistence,0.06907431036233902,7902
+사무실,temperature,60,mean_1h,0.0942379887432104,7902
+사무실,temperature,60,yesterday,0.4049529433250427,7902
+사무실 밖,temperature,5,persistence,0.0387619324028492,7902
+사무실 밖,temperature,5,mean_1h,0.14860499511637645,7902
+사무실 밖,temperature,5,yesterday,0.6897063851356506,7902
+사무실 밖,temperature,15,persistence,0.07904960215091705,7902
+사무실 밖,temperature,15,mean_1h,0.1915689034471228,7902
+사무실 밖,temperature,15,yesterday,0.6899595260620117,7902
+사무실 밖,temperature,30,persistence,0.14284738898277283,7902
+사무실 밖,temperature,30,mean_1h,0.2552059525267983,7902
+사무실 밖,temperature,30,yesterday,0.69041508436203,7902
+사무실 밖,temperature,60,persistence,0.2701282203197479,7902
+사무실 밖,temperature,60,mean_1h,0.37886842361414147,7902
+사무실 밖,temperature,60,yesterday,0.6915987730026245,7902
+실습실,co2,5,persistence,4.542446613311768,7902
+실습실,co2,5,mean_1h,13.809069789331952,7902
+실습실,co2,5,yesterday,91.8359375,7902
+실습실,co2,15,persistence,8.30800724029541,7902
+실습실,co2,15,mean_1h,17.3816621066407,7902
+실습실,co2,15,yesterday,91.73211669921875,7902
+실습실,co2,30,persistence,13.929353713989258,7902
+실습실,co2,30,mean_1h,22.519392984361776,7902
+실습실,co2,30,yesterday,91.5705337524414,7902
+실습실,co2,60,persistence,24.37772560119629,7902
+실습실,co2,60,mean_1h,31.796953268074486,7902
+실습실,co2,60,yesterday,91.26122283935547,7902
+실습실,temperature,5,persistence,0.020390044897794724,7902
+실습실,temperature,5,mean_1h,0.07437230866236756,7902
+실습실,temperature,5,yesterday,0.399080753326416,7902
+실습실,temperature,15,persistence,0.04339146986603737,7902
+실습실,temperature,15,mean_1h,0.09478959853786119,7902
+실습실,temperature,15,yesterday,0.3991498351097107,7902
+실습실,temperature,30,persistence,0.07422928512096405,7902
+실습실,temperature,30,mean_1h,0.12470007168032754,7902
+실습실,temperature,30,yesterday,0.39923417568206787,7902
+실습실,temperature,60,persistence,0.13271428644657135,7902
+실습실,temperature,60,mean_1h,0.1822414064290684,7902
+실습실,temperature,60,yesterday,0.39944708347320557,7902
+창고,temperature,5,persistence,,0
+창고,temperature,5,mean_1h,,0
+창고,temperature,5,yesterday,,0
+창고,temperature,15,persistence,,0
+창고,temperature,15,mean_1h,,0
+창고,temperature,15,yesterday,,0
+창고,temperature,30,persistence,,0
+창고,temperature,30,mean_1h,,0
+창고,temperature,30,yesterday,,0
+창고,temperature,60,persistence,,0
+창고,temperature,60,mean_1h,,0
+창고,temperature,60,yesterday,,0
+회의실,co2,5,persistence,10.104133605957031,7820
+회의실,co2,5,mean_1h,32.158905225072466,7820
+회의실,co2,5,yesterday,160.73196411132812,7820
+회의실,co2,15,persistence,23.877920150756836,7820
+회의실,co2,15,mean_1h,39.735262141183014,7820
+회의실,co2,15,yesterday,160.5735321044922,7820
+회의실,co2,30,persistence,35.16411209106445,7820
+회의실,co2,30,mean_1h,50.338885334792145,7820
+회의실,co2,30,yesterday,160.4715576171875,7820
+회의실,co2,60,persistence,55.56914138793945,7820
+회의실,co2,60,mean_1h,69.67490408231535,7820
+회의실,co2,60,yesterday,160.32762145996094,7820
+회의실,temperature,5,persistence,0.016300082206726074,7820
+회의실,temperature,5,mean_1h,0.08225027994528246,7820
+회의실,temperature,5,yesterday,0.602092981338501,7820
+회의실,temperature,15,persistence,0.04422421008348465,7820
+회의실,temperature,15,mean_1h,0.1052802575518713,7820
+회의실,temperature,15,yesterday,0.60243821144104,7820
+회의실,temperature,30,persistence,0.08005541563034058,7820
+회의실,temperature,30,mean_1h,0.13904055685236832,7820
+회의실,temperature,30,yesterday,0.6028687357902527,7820
+회의실,temperature,60,persistence,0.14667516946792603,7820
+회의실,temperature,60,mean_1h,0.20235185783740706,7820
+회의실,temperature,60,yesterday,0.6028474569320679,7820
+사무실,co2,5,gru_full,8.351503372192383,7902
+사무실,co2,15,gru_full,13.0640869140625,7902
+사무실,co2,30,gru_full,18.281936645507812,7902
+사무실,co2,60,gru_full,27.69245719909668,7902
+사무실,temperature,5,gru_full,0.013930674642324448,7902
+사무실,temperature,15,gru_full,0.025778787210583687,7902
+사무실,temperature,30,gru_full,0.03723542392253876,7902
+사무실,temperature,60,gru_full,0.058261461555957794,7902
+사무실 밖,temperature,5,gru_full,0.1288488805294037,7902
+사무실 밖,temperature,15,gru_full,0.15067248046398163,7902
+사무실 밖,temperature,30,gru_full,0.11361606419086456,7902
+사무실 밖,temperature,60,gru_full,0.43189460039138794,7902
+실습실,co2,5,gru_full,4.0789008140563965,7902
+실습실,co2,15,gru_full,6.697263240814209,7902
+실습실,co2,30,gru_full,11.3811616897583,7902
+실습실,co2,60,gru_full,21.45536231994629,7902
+실습실,temperature,5,gru_full,0.019024306908249855,7902
+실습실,temperature,15,gru_full,0.033610712736845016,7902
+실습실,temperature,30,gru_full,0.05093370005488396,7902
+실습실,temperature,60,gru_full,0.08160236477851868,7902
+회의실,co2,5,gru_full,10.801656723022461,7820
+회의실,co2,15,gru_full,21.707773208618164,7820
+회의실,co2,30,gru_full,29.618223190307617,7820
+회의실,co2,60,gru_full,43.71480178833008,7820
+회의실,temperature,5,gru_full,0.02237633988261223,7820
+회의실,temperature,15,gru_full,0.05180938541889191,7820
+회의실,temperature,30,gru_full,0.07619748264551163,7820
+회의실,temperature,60,gru_full,0.1222551167011261,7820
+사무실,co2,5,gru_no_calendar,8.209896087646484,7902
+사무실,co2,15,gru_no_calendar,12.788602828979492,7902
+사무실,co2,30,gru_no_calendar,18.509634017944336,7902
+사무실,co2,60,gru_no_calendar,30.17967414855957,7902
+사무실,temperature,5,gru_no_calendar,0.013369487598538399,7902
+사무실,temperature,15,gru_no_calendar,0.021614613011479378,7902
+사무실,temperature,30,gru_no_calendar,0.0358186773955822,7902
+사무실,temperature,60,gru_no_calendar,0.05714641883969307,7902
+사무실 밖,temperature,5,gru_no_calendar,0.07031948864459991,7902
+사무실 밖,temperature,15,gru_no_calendar,0.06674088537693024,7902
+사무실 밖,temperature,30,gru_no_calendar,0.12387801706790924,7902
+사무실 밖,temperature,60,gru_no_calendar,0.21638652682304382,7902
+실습실,co2,5,gru_no_calendar,3.871403694152832,7902
+실습실,co2,15,gru_no_calendar,6.137704849243164,7902
+실습실,co2,30,gru_no_calendar,10.430109977722168,7902
+실습실,co2,60,gru_no_calendar,20.256393432617188,7902
+실습실,temperature,5,gru_no_calendar,0.01816234551370144,7902
+실습실,temperature,15,gru_no_calendar,0.033770933747291565,7902
+실습실,temperature,30,gru_no_calendar,0.05438455566763878,7902
+실습실,temperature,60,gru_no_calendar,0.09111513942480087,7902
+회의실,co2,5,gru_no_calendar,10.672947883605957,7820
+회의실,co2,15,gru_no_calendar,20.630720138549805,7820
+회의실,co2,30,gru_no_calendar,29.280242919921875,7820
+회의실,co2,60,gru_no_calendar,46.148338317871094,7820
+회의실,temperature,5,gru_no_calendar,0.022198861464858055,7820
+회의실,temperature,15,gru_no_calendar,0.04697456210851669,7820
+회의실,temperature,30,gru_no_calendar,0.07815036177635193,7820
+회의실,temperature,60,gru_no_calendar,0.12571343779563904,7820

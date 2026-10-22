@@ -1,0 +1,6 @@
+influxdb-client==1.48.0
+pandas==3.0.6
+pyarrow==26.0.0
+matplotlib==3.11.2
+paho-mqtt==2.1.0
+PyYAML==6.0.2

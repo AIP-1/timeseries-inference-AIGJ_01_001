@@ -1,0 +1,7 @@
+model,backend,co2_max_ppm,co2_mean_ppm,temp_max_c,flip_%,max_abs_norm,prob_max_diff
+gru,pytorch_cpu,0.0,0.0,0.0,,,
+gru,onnxruntime:CPUExecutionProvider,8.91546587808989e-05,7.380693193353726e-06,5.85041028955402e-07,,,
+ae,pytorch_cpu,,,,0.0,0.0,
+ae,onnxruntime:CPUExecutionProvider,,,,0.0,8.344650268554688e-07,
+vent,pytorch_cpu,,,,0.0,,7.386842459933263e-08
+vent,onnxruntime:CPUExecutionProvider,,,,0.0,,9.018334201638112e-08

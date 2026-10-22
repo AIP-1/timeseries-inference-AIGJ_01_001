@@ -1,0 +1,68 @@
+event,location,fault,start,detected,delay_min,cause_ok,by
+0,사무실,spike,2026-10-15 23:55:00+00:00,True,5.0,True,spike
+1,사무실,spike,2026-10-10 03:00:00+00:00,True,5.0,True,spike
+2,사무실,spike,2026-09-24 16:35:00+00:00,True,5.0,True,spike
+3,사무실,spike,2026-09-23 01:50:00+00:00,True,5.0,True,ae
+4,사무실,stuck,2026-10-09 07:00:00+00:00,True,30.0,True,stuck
+5,사무실,stuck,2026-10-12 16:05:00+00:00,True,30.0,True,stuck
+6,사무실,stuck,2026-10-07 13:30:00+00:00,True,30.0,True,stuck
+7,사무실,stuck,2026-10-18 07:40:00+00:00,True,30.0,True,stuck
+8,사무실,drift,2026-10-15 01:00:00+00:00,False,,False,
+9,사무실,drift,2026-09-23 13:05:00+00:00,True,350.0,True,night
+10,사무실,drift,2026-09-27 10:50:00+00:00,True,485.0,True,night
+11,사무실,drift,2026-09-30 20:35:00+00:00,False,,False,
+12,사무실,cooling,2026-10-12 05:50:00+00:00,True,210.0,True,ae
+13,사무실,cooling,2026-10-14 02:25:00+00:00,True,200.0,True,ae
+14,사무실,cooling,2026-10-19 04:40:00+00:00,True,205.0,True,ae
+15,사무실,cooling,2026-10-13 02:05:00+00:00,True,245.0,True,ae
+16,사무실,ventilation,2026-10-08 04:40:00+00:00,False,,False,
+17,사무실,ventilation,2026-10-02 04:00:00+00:00,True,210.0,True,ae
+18,사무실,ventilation,2026-10-06 02:20:00+00:00,False,,False,
+19,사무실,ventilation,2026-10-07 01:45:00+00:00,True,60.0,True,rise
+20,사무실 밖,spike,2026-10-12 09:00:00+00:00,True,0.0,True,ae
+21,사무실 밖,spike,2026-10-07 05:25:00+00:00,True,0.0,True,ae
+22,사무실 밖,spike,2026-09-29 14:50:00+00:00,True,0.0,True,ae
+23,사무실 밖,spike,2026-10-06 11:35:00+00:00,True,0.0,True,ae
+24,사무실 밖,stuck,2026-10-17 02:05:00+00:00,True,60.0,True,stuck
+25,사무실 밖,stuck,2026-09-28 20:45:00+00:00,True,60.0,True,stuck
+26,사무실 밖,stuck,2026-10-09 17:55:00+00:00,True,55.0,True,stuck
+27,사무실 밖,stuck,2026-09-24 22:20:00+00:00,True,60.0,True,stuck
+28,실습실,spike,2026-10-02 23:40:00+00:00,True,0.0,True,ae
+29,실습실,spike,2026-10-15 12:05:00+00:00,True,5.0,True,ae
+30,실습실,spike,2026-10-14 09:05:00+00:00,True,5.0,True,spike
+31,실습실,spike,2026-10-16 17:00:00+00:00,True,5.0,True,ae
+32,실습실,stuck,2026-09-26 18:05:00+00:00,True,30.0,True,stuck
+33,실습실,stuck,2026-10-04 23:55:00+00:00,True,30.0,True,stuck
+34,실습실,stuck,2026-10-12 00:10:00+00:00,True,30.0,True,stuck
+35,실습실,stuck,2026-10-13 16:50:00+00:00,True,30.0,True,stuck
+36,실습실,drift,2026-10-08 06:55:00+00:00,False,,False,
+37,실습실,drift,2026-10-18 15:10:00+00:00,False,,False,
+38,실습실,drift,2026-10-17 07:50:00+00:00,True,930.0,True,ae
+39,실습실,drift,2026-09-28 02:30:00+00:00,True,965.0,True,ae
+40,실습실,cooling,2026-10-02 01:55:00+00:00,True,25.0,True,ae
+41,실습실,cooling,2026-10-06 02:00:00+00:00,True,230.0,True,ae
+42,실습실,cooling,2026-10-07 05:45:00+00:00,True,215.0,True,ae
+43,실습실,cooling,2026-10-01 01:55:00+00:00,True,245.0,True,ae
+44,실습실,ventilation,2026-10-15 02:30:00+00:00,True,20.0,True,ae
+45,실습실,ventilation,2026-10-16 05:15:00+00:00,True,5.0,True,ae
+46,실습실,ventilation,2026-10-13 01:25:00+00:00,True,40.0,True,ae
+47,회의실,spike,2026-10-16 22:15:00+00:00,True,5.0,True,spike
+48,회의실,spike,2026-10-19 01:40:00+00:00,True,5.0,True,spike
+49,회의실,spike,2026-10-07 21:15:00+00:00,True,5.0,True,spike
+50,회의실,spike,2026-10-13 01:50:00+00:00,True,5.0,True,spike
+51,회의실,stuck,2026-09-24 08:25:00+00:00,True,30.0,True,stuck
+52,회의실,stuck,2026-10-12 13:50:00+00:00,True,25.0,True,stuck
+53,회의실,stuck,2026-09-25 00:45:00+00:00,True,20.0,True,stuck
+54,회의실,stuck,2026-10-03 11:35:00+00:00,True,30.0,True,stuck
+55,회의실,drift,2026-09-28 23:10:00+00:00,False,,False,
+56,회의실,drift,2026-09-26 07:55:00+00:00,True,305.0,True,rise
+57,회의실,drift,2026-09-30 05:30:00+00:00,True,805.0,True,night
+58,회의실,drift,2026-10-11 02:50:00+00:00,True,200.0,True,rise
+59,회의실,cooling,2026-09-23 03:15:00+00:00,True,230.0,True,ae
+60,회의실,cooling,2026-09-28 04:40:00+00:00,True,200.0,True,ae
+61,회의실,cooling,2026-10-06 02:50:00+00:00,True,155.0,True,ae
+62,회의실,cooling,2026-10-07 02:05:00+00:00,True,205.0,True,ae
+63,회의실,ventilation,2026-10-16 03:55:00+00:00,False,,False,
+64,회의실,ventilation,2026-10-14 06:00:00+00:00,False,,False,
+65,회의실,ventilation,2026-10-02 04:00:00+00:00,False,,False,
+66,회의실,ventilation,2026-10-15 04:55:00+00:00,True,165.0,True,rise
