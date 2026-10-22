@@ -18,8 +18,13 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+import warnings
+
 import pandas as pd
 from influxdb_client import InfluxDBClient
+from influxdb_client.client.warnings import MissingPivotFunction
+
+warnings.simplefilter("ignore", MissingPivotFunction)  # 태그별 긴 표가 맞는 형태라 pivot 경고는 불필요
 
 KST = "Asia/Seoul"
 ROOMS = ["실습실", "사무실", "회의실"]

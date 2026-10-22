@@ -1,0 +1,1 @@
+보드에서 `docker compose run --rm lab python -m analysis.recent_week` 실행 결과(2026-10-22 09:35 KST, 기간 2026-10-15 00:00 ~ 10-22 00:00 KST, 공용 iot-bucket CO₂, 15분 평균, 0 < 값 < 5000). 보드의 `data/reports/recent_week/` 에 있던 CSV 를 실행 출력에서 옮겨 적음.
