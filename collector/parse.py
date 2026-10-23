@@ -140,6 +140,9 @@ def _field_value(v: Any) -> float | bool | None:
 
 # ---------- 규칙 적용 ----------
 
+CLOCK_MIN_NS = parse_time_ns("2024-01-01T00:00:00Z")   # 이보다 이른 시각은 시계가 아직 안 맞은 것
+
+
 class Parser:
     def __init__(self, config: dict):
         self.sources = config["sources"]
@@ -181,7 +184,8 @@ class Parser:
                 ts = parse_time_ns(v, unit)
             if ts is None:
                 continue
-            if abs(ts - recv_ns) > self.max_skew_ns:
+            # 재부팅 직후 보드 시계가 아직 1970년이면 받은 시각을 믿을 수 없으니 메시지 시각을 쓴다
+            if recv_ns >= CLOCK_MIN_NS and abs(ts - recv_ns) > self.max_skew_ns:
                 return recv_ns, f"skew:{path}"
             return ts, path
         return recv_ns, "received"

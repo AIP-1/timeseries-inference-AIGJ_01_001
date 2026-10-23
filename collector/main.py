@@ -23,7 +23,7 @@ import yaml
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-from .parse import Parser, Record
+from .parse import CLOCK_MIN_NS, Parser, Record
 from .spool import Spool
 from .status import Status
 
@@ -107,6 +107,10 @@ class Collector:
             return
         if not recs:
             st.unmatched += 1
+            return
+        if recs[0].ts_ns < CLOCK_MIN_NS:            # 메시지에 시각이 없고 보드 시계도 아직 1970년이면 버린다
+            st.errors += 1
+            st.last_error = f"{msg.topic}: 보드 시계가 맞기 전이라 버림"
             return
         if st.is_duplicate(recs[0].dedup_key):
             return

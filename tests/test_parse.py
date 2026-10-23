@@ -94,3 +94,9 @@ def test_duplicate_detection():
     assert st.is_duplicate("a")
     assert not st.is_duplicate(None)
     assert st.duplicates == 1
+
+
+def test_unset_board_clock_trusts_message_time(parser):
+    recv = ns("1970-01-01T00:18:10Z")   # 재부팅 직후 NTP 전 보드 시계
+    [r] = parser.parse(CS_TOPIC, sample("chirpstack_am107.json"), recv)
+    assert r.ts_ns > ns("2024-01-01T00:00:00Z") and not r.meta["ts_from"].startswith("skew:")
