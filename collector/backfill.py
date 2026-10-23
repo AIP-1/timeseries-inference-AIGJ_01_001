@@ -37,9 +37,13 @@ def reparse(paths: list[str], parser: Parser) -> tuple[list[str], Counter]:
                 except Exception:
                     n["parse_errors"] += 1
                     continue
-                if not recs or recs[0].dedup_key in seen:
+                if not recs:
                     continue
-                seen.add(recs[0].dedup_key)
+                key = recs[0].dedup_key                 # 냉난방(xflow) 메시지는 키가 없다
+                if key is not None:
+                    if key in seen:
+                        continue
+                    seen.add(key)
                 for r in recs:
                     if r.ts_ns < CLOCK_MIN_NS:          # 메시지에 시각이 없어 되살릴 수 없음
                         n["no_time"] += 1

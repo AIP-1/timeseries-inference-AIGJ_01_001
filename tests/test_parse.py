@@ -113,3 +113,16 @@ def test_backfill_restores_message_time_from_raw_archive(parser, tmp_path):
     lines, n = reparse([str(p)], parser)
     assert n["messages"] == 2 and len(lines) == 1
     assert int(lines[0].rsplit(" ", 1)[1]) > ns("2024-01-01T00:00:00Z")
+
+
+def test_backfill_keeps_messages_without_dedup_key(parser, tmp_path):
+    import gzip, json
+    from collector.backfill import reparse
+    p = tmp_path / "1970-01-01.jsonl.gz"
+    topic = "xflow/hvacr/idu/4a848cc0-8598-11f1-bcac-bdfb397bbe8a/status"
+    with gzip.open(p, "wt", encoding="utf-8") as f:
+        for _ in range(2):
+            f.write(json.dumps({"recv_ns": ns("1970-01-01T00:18:10Z"), "topic": topic,
+                                "payload": sample("xflow_idu.json").decode("utf-8")}) + "\n")
+    _, n = reparse([str(p)], parser)
+    assert n["hvac"] == 2
