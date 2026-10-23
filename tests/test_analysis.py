@@ -80,3 +80,19 @@ def test_to_grid_handles_mixed_sensor_intervals():
     g = prep.to_grid(df, prep.GridSpec(max_fill_bins=0))
     assert (g[("L", "temperature")].iloc[:-1] == 19.0).all()   # 칸마다 흔들리지 않음
     assert g[("M", "temperature")].iloc[:-1].notna().all()     # 10분 장비만 있어도 칸이 채워짐
+
+
+def test_service_read_keeps_time_datetime_when_parts_mix():
+    from analysis import service
+    src = object.__new__(service.Source)
+    src.instr = None
+    src.cache = pd.DataFrame(columns=["time", "device_id", "location", "field", "value"])
+    now = pd.Timestamp("2026-10-23 01:00", tz="UTC")
+    rows = pd.DataFrame({"time": [(now - pd.Timedelta("10min")).isoformat()], "device_id": ["d"],
+                         "location": ["L"], "field": ["co2"], "value": [500.0]})
+    src._local = lambda start: rows                     # 문자열 시각이 섞여 들어와도
+    df = src.read(now)
+    assert pd.api.types.is_datetime64_any_dtype(df["time"])
+    src._local = lambda start: src.cache.iloc[:0].astype({"time": object})   # 빈 조각과 합쳐도
+    df = src.read(now)
+    assert pd.api.types.is_datetime64_any_dtype(df["time"])

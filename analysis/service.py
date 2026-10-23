@@ -108,6 +108,8 @@ from(bucket: "{self.bucket}")
                     log.info("과거 %s ~ %s 는 iot-bucket 에서 읽음", start, first)
                 except Exception:
                     log.exception("iot-bucket 과거 읽기 실패(로컬만 사용)")
+        # 합친 조각 중 하나라도 비었거나 시각 형식이 다르면 object 열이 되어 .dt 에서 터진다(재부팅 직후 1970 시계 때 발생)
+        df["time"] = pd.to_datetime(df["time"], utc=True)
         df = df[df["time"] >= start].drop_duplicates(["time", "device_id", "field"])
         self.cache = df
         return df
@@ -451,8 +453,16 @@ class Service:
             time.sleep(60 - datetime.now(timezone.utc).second % 60 + 5)   # 매분 5초(수집기 기록이 들어온 뒤)
 
 
+def wait_for_clock(min_year: int = 2024, poll_s: float = 5.0):
+    """재부팅 직후 NTP 로 시계가 맞기 전(1970년)에 시작하면 과거 기준 시각이 어긋난다. 맞을 때까지 기다린다."""
+    while datetime.now(timezone.utc).year < min_year:
+        log.warning("시계가 아직 %s 이라 기다림", datetime.now(timezone.utc).isoformat())
+        time.sleep(poll_s)
+
+
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    wait_for_clock()
     Service().run()
 
 
