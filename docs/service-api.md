@@ -1,13 +1,13 @@
 # 추론 서비스 v1 결과 형식
 
-팀 Jetson(`aip-1-3`, Tailscale `100.108.186.17`)에서 매분 공간마다 **60분 예측·이상·상태**를 계산해 두 가지로 내보낸다.
+팀 Jetson(`aip-1-3`, Tailscale 주소 `<Jetson IP>`)에서 매분 공간마다 **60분 예측·이상·상태**를 계산해 두 가지로 내보낸다.
 
 | 방식 | 주소 | 용도 |
 |---|---|---|
-| MQTT (읽기 전용) | `100.108.186.17:1884`, 토픽 `aigj/01-001/inference/<space>/state` (retained) | 대시보드·제어 시스템이 계속 받기. 새로 구독해도 최신값을 바로 받음 |
+| MQTT (읽기 전용) | `<Jetson IP>:1884`, 토픽 `aigj/01-001/inference/<space>/state` (retained) | 대시보드·제어 시스템이 계속 받기. 새로 구독해도 최신값을 바로 받음 |
 | MQTT 경보 | `aigj/01-001/inference/<space>/alert` (retained 아님) | 경보가 켜질 때·켜져 있는 동안 30분마다·꺼질 때 한 번씩 |
 | MQTT 서비스 상태 | `aigj/01-001/inference/_service/status` (retained) | 서비스가 살아 있는지 |
-| 조회 API | `http://100.108.186.17:8091` | 필요할 때 묻기(LLM 에이전트 도구 등) |
+| 조회 API | `http://<Jetson IP>:8091` | 필요할 때 묻기(LLM 에이전트 도구 등) |
 
 `<space>` 키: `lab`(실습실), `office`(사무실), `office_hall`(사무실 밖), `meeting`(회의실), `storage`(창고). 수집기 설정(spaces.by_name)에 없는 공간은 한글 이름 그대로.
 API 경로에는 키와 한글 이름 둘 다 쓸 수 있다.
@@ -23,7 +23,7 @@ API 경로에는 키와 한글 이름 둘 다 쓸 수 있다.
 | `GET /status` | 주기 수, 마지막 성공 시각, 마지막 오류, 켜진 경보 |
 | `GET /healthz` | 마지막 성공이 5분 안이면 200, 아니면 503 |
 
-예: "회의실 30분 뒤 CO₂는?" → `curl 'http://100.108.186.17:8091/spaces/meeting/forecast?minutes=30'`
+예: "회의실 30분 뒤 CO₂는?" → `curl 'http://<Jetson IP>:8091/spaces/meeting/forecast?minutes=30'`
 ```json
 {"space": "회의실", "asked_minutes": 30, "minutes": 30, "time": "2026-10-21T01:30:00+00:00",
  "co2_ppm": 812.4, "temperature_c": 24.1, "time_basis": "2026-10-21T01:00:00+00:00"}
